@@ -1,0 +1,11 @@
+spring:
+  application:
+    name: @project.name@
+    version: @project.version@
+logging:
+  file:
+    name: logs/dino.log
+  logback:
+    rollingpolicy:
+      max-history: 1024
+      max-file-size: 64MB
