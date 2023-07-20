@@ -16,7 +16,7 @@ import java.util.Objects;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResourceUtil {
 
-    public static Image getResourceSprite(final String path) {
+    public static Image getResourceImage(final String path) {
         final var url = ResourceUtil.class.getClassLoader().getResource(path);
         if (Objects.isNull(url)) {
             return null;

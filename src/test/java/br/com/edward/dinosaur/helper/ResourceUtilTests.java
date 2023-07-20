@@ -9,15 +9,15 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 class ResourceUtilTests {
 
     @Test
-    @DisplayName("Check getResourceSprite with valid file")
-    void testGetNotNullResourceSprite() {
-        assertThat(ResourceUtil.getResourceSprite("img/cloud.png")).isNotNull();
+    @DisplayName("Check getResourceImage with valid file")
+    void testGetNotNullResourceImage() {
+        assertThat(ResourceUtil.getResourceImage("img/cloud.png")).isNotNull();
     }
 
     @Test
-    @DisplayName("Check getResourceSprite with non existing file")
-    void testGetNullResourceSpriteForNonExistingResource() {
-        assertThat(ResourceUtil.getResourceSprite("non_existing_path.png")).isNull();
+    @DisplayName("Check getResourceImage with non existing file")
+    void testGetNullResourceImageForNonExistingResource() {
+        assertThat(ResourceUtil.getResourceImage("non_existing_path.png")).isNull();
     }
 
     @Test

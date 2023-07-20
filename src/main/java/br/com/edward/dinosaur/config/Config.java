@@ -72,6 +72,7 @@ public class Config {
         this.speed = this.minSpeed;
         this.score = 0;
 
+        this.window.setIconImage(ResourceUtil.getResourceImage("icons/icon.png"));
         this.window.setResizable(this.resizable);
         this.window.setTitle(this.title);
         this.window.setSize(this.width, this.height);
@@ -87,7 +88,7 @@ public class Config {
         this.menuButtonsSprite = this.createMenuButtonsSprite();
         this.gameOverSprite = this.createGameOverSprite();
 
-        final var image = ResourceUtil.getResourceSprite("img/dinosaurs.png");
+        final var image = ResourceUtil.getResourceImage("img/dinosaurs.png");
         this.dinoStandingSprite = this.createDinoStandingSprite(image);
         this.dinoRunSprite = this.createDinoRunSprite(image);
         this.dinoJumpSprite = this.createDinoJumpSprite(image);
@@ -129,7 +130,7 @@ public class Config {
     }
 
     private Sprite createCactusSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/cactus.png");
+        final var image = ResourceUtil.getResourceImage("img/cactus.png");
         final var sprite = new Sprite(image, 34, 70, 0, 0);
         sprite.addFrame(34, 70, 68, 0);
         sprite.addFrame(34, 70, 136, 0);
@@ -152,7 +153,7 @@ public class Config {
     }
 
     private Sprite createGroundsSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/ground.png");
+        final var image = ResourceUtil.getResourceImage("img/ground.png");
         final var sprite = new Sprite(image, 96, 26, 0, 0);
         sprite.addFrame(74, 26, 96, 0);
         sprite.addFrame(74, 26, 170, 0);
@@ -185,12 +186,12 @@ public class Config {
     }
 
     private Sprite createCloudsSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/cloud.png");
+        final var image = ResourceUtil.getResourceImage("img/cloud.png");
         return new Sprite(image, 92, 27, 0, 0);
     }
 
     private Sprite createStarsSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/stars.png");
+        final var image = ResourceUtil.getResourceImage("img/stars.png");
         final var sprite = new Sprite(image, 18, 18, 0, 36);
         sprite.addFrame(18, 18, 0, 18);
         sprite.addFrame(18, 18, 0, 0);
@@ -198,7 +199,7 @@ public class Config {
     }
 
     private Sprite createMoonSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/moons.png");
+        final var image = ResourceUtil.getResourceImage("img/moons.png");
         final var sprite = new Sprite(image, 40, 80, 0, 0);
         sprite.addFrame(40, 80, 40, 0);
         sprite.addFrame(40, 80, 80, 0);
@@ -211,14 +212,14 @@ public class Config {
     }
 
     private Sprite createBirdsSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/birds.png");
+        final var image = ResourceUtil.getResourceImage("img/birds.png");
         final var sprite = new Sprite(image, 92, 80, 92, 0);
         sprite.addFrame(92, 80, 0, 0);
         return sprite;
     }
 
     private Sprite createReplayButtonsSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/replay-buttons.png");
+        final var image = ResourceUtil.getResourceImage("img/replay-buttons.png");
         final var sprite = new Sprite(image, 72, 64, 0, 0);
         sprite.addFrame(72, 64, 72, 0);
         sprite.addFrame(72, 64, 144, 0);
@@ -237,7 +238,7 @@ public class Config {
     }
 
     private Sprite createMenuButtonsSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/menu-buttons.png");
+        final var image = ResourceUtil.getResourceImage("img/menu-buttons.png");
         final var sprite = new Sprite(image, 432, 64, 0, 0);
         sprite.addFrame(432, 64, 0, 64);
 
@@ -245,7 +246,7 @@ public class Config {
     }
 
     private Sprite createGameOverSprite() {
-        final var image = ResourceUtil.getResourceSprite("img/game-over.png");
+        final var image = ResourceUtil.getResourceImage("img/game-over.png");
         return new Sprite(image, 383, 23, 0, 0);
     }
 
