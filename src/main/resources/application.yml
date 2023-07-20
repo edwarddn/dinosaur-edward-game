@@ -4,7 +4,7 @@ spring:
     version: @project.version@
 logging:
   file:
-    name: logs/dino.log
+    name: ${user.home}/dinosaur/logs/dinosaur.log
   logback:
     rollingpolicy:
       max-history: 1024

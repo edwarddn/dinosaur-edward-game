@@ -12,7 +12,7 @@
 
     <groupId>br.com.edward</groupId>
     <artifactId>dinosaur</artifactId>
-    <version>0.0.1</version>
+    <version>1.0.0</version>
 
     <name>dinosaur</name>
     <description>Dinosaur Edward Game</description>
@@ -23,6 +23,9 @@
         <!-- Tests -->
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <jacoco.maven.plugin.version>0.8.8</jacoco.maven.plugin.version>
+
+        <!-- Package -->
+        <exec-maven-plugin.version>3.1.0</exec-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -61,6 +64,27 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>move-file</id>
+                        <phase>install</phase>
+                        <configuration>
+                            <target>
+                                <move file="${project.build.directory}/${project.build.finalName}.jar"
+                                      tofile="${project.build.directory}/output/${project.build.finalName}.jar"/>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
@@ -95,5 +119,118 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>linux</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--name</argument>
+                                        <argument>${project.description}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}/output</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${project.build.finalName}.jar</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/resources/icons/icon.png</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/output</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+         <profile>
+            <id>windows</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--name</argument>
+                                        <argument>${project.description}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}/output</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${project.build.finalName}.jar</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/resources/icons/icon.ico</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/output</argument>
+                                        <argument>--win-shortcut</argument>
+                                        <argument>--win-menu</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>macos</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>${exec-maven-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>jpackage</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>jpackage</executable>
+                                    <arguments>
+                                        <argument>--name</argument>
+                                        <argument>${project.description}</argument>
+                                        <argument>--input</argument>
+                                        <argument>${project.build.directory}/output</argument>
+                                        <argument>--main-jar</argument>
+                                        <argument>${project.build.finalName}.jar</argument>
+                                        <argument>--icon</argument>
+                                        <argument>${project.basedir}/src/main/resources/icons/icon.icns</argument>
+                                        <argument>--dest</argument>
+                                        <argument>${project.build.directory}/output</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

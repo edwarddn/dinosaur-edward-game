@@ -36,7 +36,7 @@ public class DinosaurApplication implements CommandLineRunner {
                     .enemyDistance(1000)
                     .populationSize(1500)
                     .showCollision(false)
-                    .showStatistics(false)
+                    .showStatistics(true)
                     .collision(true)
                     .build();
 
