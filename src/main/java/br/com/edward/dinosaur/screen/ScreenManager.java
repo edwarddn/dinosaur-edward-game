@@ -83,8 +83,12 @@ public class ScreenManager {
         for (final var item :  this.objects) {
             item.draw(g2d);
         }
+        int i = 0;
         for (final var item : this.dinosaurs) {
             item.draw(g2d);
+            if (i++ > 50) {
+                break;
+            }
         }
     }
 
@@ -158,7 +162,7 @@ public class ScreenManager {
         while (width >= groundWidth) {
             final var ground = new Ground(config, groundWidth);
             this.objects.add(ground);
-            groundWidth += ground.getBound().getWidth();
+            groundWidth += ground.getWidth();
         }
     }
 
@@ -168,7 +172,7 @@ public class ScreenManager {
             return 0;
         }
         final var lastGround = grounds.get(grounds.size() - 1);
-        return lastGround.getPositionX() + lastGround.getBound().getWidth();
+        return lastGround.getPositionX() + lastGround.getWidth();
     }
 
     private void createEnemy() {
@@ -178,7 +182,7 @@ public class ScreenManager {
         while (width >= enemyWidth) {
             final var enemy = this.random.nextInt(2) == 0 ? new Bird(config, enemyWidth) : new Cactus(config, enemyWidth);
             this.objects.add(enemy);
-            enemyWidth += enemy.getBound().getWidth() + config.getEnemyDistance();
+            enemyWidth += enemy.getWidth() + config.getEnemyDistance();
         }
     }
 
@@ -187,6 +191,6 @@ public class ScreenManager {
             return config.getWidth() + (double) config.getEnemyDistance();
         }
         final var lastEnemy = enemies.get(enemies.size() - 1);
-        return lastEnemy.getPositionX() + lastEnemy.getBound().getWidth() + this.random.nextInt(config.getEnemyDistance(), config.getEnemyDistance() * 2);
+        return lastEnemy.getPositionX() + lastEnemy.getWidth() + this.random.nextInt(config.getEnemyDistance(), config.getEnemyDistance() * 2);
     }
 }
