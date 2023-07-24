@@ -34,7 +34,7 @@ public class DinosaurApplication implements CommandLineRunner {
                     .jumpSpeed(25)
                     .acceleration(0.001)
                     .enemyDistance(1000)
-                    .populationSize(1500)
+                    .populationSize(2000)
                     .showCollision(false)
                     .showStatistics(true)
                     .collision(true)

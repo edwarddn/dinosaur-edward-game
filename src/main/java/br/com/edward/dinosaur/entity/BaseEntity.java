@@ -89,7 +89,7 @@ public abstract class BaseEntity {
     public void draw(final Graphics2D g2d) {
         this.getSprite().draw(g2d, getInt(this.getPositionX()), getInt(this.getPositionY()), this.getFramePosition());
         if (this.getConfig().isShowCollision()) {
-            g2d.setColor(Color.red);
+            g2d.setColor(Color.BLUE);
             final var bound = getBound();
             g2d.drawRect(bound.x, bound.y, bound.width, bound.height);
         }

@@ -15,12 +15,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
 
+import static br.com.edward.dinosaur.helper.IntUtil.getInt;
+
 @Getter
 public class Dinosaur extends BaseEntity {
 
     private double score;
     private final NeuralNetwork neuralNetwork;
 
+    private final Polygon polygon;
     private final double defaultPositionX;
     private final double defaultPositionY;
     private EnumDinosaurActions state;
@@ -29,6 +32,7 @@ public class Dinosaur extends BaseEntity {
 
     public Dinosaur(final Config config, final boolean isPlayer, final NeuralNetwork neuralNetwork) {
         super(config, EnumTypeOfEntity.PLAYER);
+        this.polygon = new Polygon();
         this.score = 0.0;
 
         if (isPlayer) {
@@ -159,13 +163,27 @@ public class Dinosaur extends BaseEntity {
             this.dead();
         }
 
+        if (this.getConfig().isShowCollision()) {
+
+            this.polygon.reset();
+            this.polygon.addPoint(
+                    getInt(this.getBound().getX() + this.getBound().getWidth()),
+                    getInt(this.getBound().getY())
+            );
+            this.polygon.addPoint(
+                    getInt(enemy.getBound().getX()),
+                    getInt((enemy instanceof Bird) ? enemy.getBound().getY() + enemy.getBound().getHeight() : enemy.getBound().getY())
+            );
+        }
+
         if (!this.isDeath() && Objects.nonNull(this.neuralNetwork)) {
 
+            final var distance = enemy.getBound().getX() - (this.getBound().getX() + this.getBound().getWidth());
             final var output = neuralNetwork.getOutput(new double[]{
-                    enemy.getReferencePositionX() - this.referencePositionX,
-                    enemy.getWidth(),
+                    (distance > 0) ? distance : 0,
+                    enemy.getBound().getWidth(),
                     enemy.getReferencePositionY(),
-                    enemy.getHeight(),
+                    enemy.getBound().getHeight(),
                     super.getConfig().getSpeed(),
                     (this.referencePositionY + this.getBound().getHeight())
             });
@@ -176,6 +194,15 @@ public class Dinosaur extends BaseEntity {
             if (output[1] > 0) {
                 this.down(true);
             }
+        }
+    }
+
+    @Override
+    public void draw(final Graphics2D g2d) {
+        super.draw(g2d);
+        if (this.getConfig().isShowCollision() && !this.isOutOfScreen()) {
+            g2d.setColor(Color.GREEN);
+            g2d.drawPolygon(this.polygon);
         }
     }
 

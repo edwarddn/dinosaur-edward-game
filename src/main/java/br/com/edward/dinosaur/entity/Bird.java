@@ -12,7 +12,7 @@ public class Bird extends BaseEntity {
     public Bird(final Config config, final double positionX) {
         super(config, EnumTypeOfEntity.ENEMY);
         this.referencePositionX = positionX;
-        this.speedX = super.getConfig().getSpeed() + 3;
+        this.speedX = super.getConfig().getSpeed();
         switch (new SplittableRandom().nextInt(0, 4)) {
             case 0 -> this.referencePositionY = 210;
             case 1 -> this.referencePositionY = 230;
@@ -25,14 +25,6 @@ public class Bird extends BaseEntity {
     public void update(final double deltaTime) {
         super.update(deltaTime);
         this.updateFrame(120);
-    }
-
-    @Override
-    public double getSpeedX() {
-        if (this.getPositionX() > (super.getConfig().getEnemyDistance() + (super.getConfig().getEnemyDistance() / 2.0))) {
-            return super.getConfig().getSpeed();
-        }
-        return super.speedX;
     }
 
     @Override

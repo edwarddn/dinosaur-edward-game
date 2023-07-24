@@ -54,11 +54,15 @@ public class ScoreLabel {
         g2d.setColor(new Color(91, 91, 91));
         g2d.setFont(config.getFont().deriveFont(23f));
 
+        final var text = this.getText();
+        g2d.drawString(text, this.config.getWidth() - (text.length() * 25), 45);
+    }
+
+    private String getText() {
         if (this.config.isTraining()) {
-            g2d.drawString(String.format("HI %05d %05d", this.highScore, this.score), this.config.getWidth() - 336, 45);
-        } else {
-            g2d.drawString(String.format("AI %05d YOU %05d", this.aiScore, this.youScore), this.config.getWidth() - 430, 45);
+            return String.format("HI %05d %05d", this.highScore, this.score);
         }
+        return String.format("AI %05d YOU %05d", this.aiScore, this.youScore);
     }
 
     public void reset() {
