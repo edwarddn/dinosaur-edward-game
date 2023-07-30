@@ -12,7 +12,7 @@ To try out the game, download the version compatible with your operating system:
 
 - [Download for macOS (AArch64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v1.0.1/dinosaur-edward-game.dmg)
 - [Download for Linux (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v1.1.0/dinosaur-edward-game-1.1.0.deb)
-- [Download for Windows (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v1.0.1/dinosaur-edward-game.exe)
+- [Download for Windows (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v1.1.0/dinosaur-edward-game-1.1.0.exe)
 
 After downloading, simply run the downloaded file on your operating system to install the game.
 
