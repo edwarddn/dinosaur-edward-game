@@ -13,7 +13,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
-import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -55,8 +54,9 @@ public class GameScreen extends JPanel implements Runnable {
         } else if (EnumGameStatus.PLAYING.equals(this.config.getGameState())) {
             this.player.update(deltaTime);
             this.screenManager.update(deltaTime);
-            this.scoreLabel.update(this.config.getScore());
-            this.scoreLabel.update(this.player.getScore(), this.screenManager.getDinosaurs().isEmpty() ? 0.0 : this.screenManager.getDinosaurs().get(0).getScore());
+            final long score = this.screenManager.getBeastDinosaur().map(Dinosaur::getScore).orElse(0L);
+            this.scoreLabel.update(score);
+            this.scoreLabel.update(this.player.getScore(), score);
             if (this.screenManager.getDinosaurs().isEmpty() && this.player.isDeath()) {
                 this.gameOver();
             }
@@ -148,14 +148,13 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     private int getGeneration() {
-        return this.screenManager.getDinosaurs().stream()
-                .findFirst()
+        return this.screenManager.getBeastDinosaur()
                 .map(dinosaur -> dinosaur.getNeuralNetwork().getGeneration())
                 .orElse(0);
     }
 
     private void saveNeuralNetwork() {
-        final var beastDinosaur = (this.screenManager.getDinosaurs().isEmpty() ? this.screenManager.getDeadDinosaurs() : this.screenManager.getDinosaurs()).stream().max(Comparator.comparing(Dinosaur::getScore));
+        final var beastDinosaur = this.screenManager.getBeastDinosaur();
         if (beastDinosaur.isPresent() && this.config.isTraining()) {
             beastDinosaur.get().getNeuralNetwork().save();
         }
@@ -214,11 +213,6 @@ public class GameScreen extends JPanel implements Runnable {
 
     private void customKeyPressed(final KeyEvent e) {
         switch (this.config.getGameState()) {
-            case WAITING_TO_PLAY -> {
-                if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    this.restartGame();
-                }
-            }
             case PLAYING -> {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
                     this.player.jump();

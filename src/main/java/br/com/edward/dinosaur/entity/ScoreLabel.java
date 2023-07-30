@@ -4,49 +4,47 @@ import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.helper.ResourceUtil;
 
 import java.awt.*;
-
-import static br.com.edward.dinosaur.helper.IntUtil.getInt;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ScoreLabel {
 
+    private final ExecutorService singleThreadExecutor;
     private final Config config;
 
-    private int highScore;
-    private int score;
-    private int youScore;
-    private int aiScore;
+    private long highScore;
+    private long score;
+    private long youScore;
+    private long aiScore;
 
     public ScoreLabel(final Config config) {
+        this.singleThreadExecutor = Executors.newSingleThreadExecutor();
         this.config = config;
-        this.highScore = 0;
-        this.score = 0;
-        this.youScore = 0;
-        this.aiScore = 0;
+        this.reset();
     }
 
-    public void update(final double score) {
-        final var intScore = getInt(score);
-        if (intScore > this.score) {
-            this.score = intScore;
-            if (this.score > this.highScore) {
-                this.highScore = this.score;
+    public void update(final long score) {
+        CompletableFuture.runAsync(() -> {
+            while (score > this.score) {
+                this.score++;
+                if (this.score > this.highScore) {
+                    this.highScore = this.score;
+                    if (this.highScore % 100 == 0) {
+                        ResourceUtil.playSound(this.config.getReached());
+                    }
+                }
             }
-
-            if (this.score % 100 == 0) {
-                ResourceUtil.playSound(this.config.getReached());
-            }
-        }
+        }, singleThreadExecutor);
     }
 
-    public void update(final double youScore, final double aiScore) {
-        final var intYouScore = getInt(youScore);
-        if (intYouScore > this.youScore) {
-            this.youScore = intYouScore;
+    public void update(final long youScore, final long aiScore) {
+        if (youScore != this.youScore) {
+            this.youScore = youScore;
         }
 
-        final var intAiScore = getInt(aiScore);
-        if (intAiScore > this.aiScore) {
-            this.aiScore = intAiScore;
+        if (aiScore != this.aiScore) {
+            this.aiScore = aiScore;
         }
     }
 
@@ -66,6 +64,9 @@ public class ScoreLabel {
     }
 
     public void reset() {
+        this.highScore = 0;
         this.score = 0;
+        this.youScore = 0;
+        this.aiScore = 0;
     }
 }

@@ -20,7 +20,8 @@ import static br.com.edward.dinosaur.helper.IntUtil.getInt;
 @Getter
 public class Dinosaur extends BaseEntity {
 
-    private double score;
+    private BaseEntity lastEnemy;
+    private long score;
     private final NeuralNetwork neuralNetwork;
 
     private final Polygon polygon;
@@ -33,7 +34,7 @@ public class Dinosaur extends BaseEntity {
     public Dinosaur(final Config config, final boolean isPlayer, final NeuralNetwork neuralNetwork) {
         super(config, EnumTypeOfEntity.PLAYER);
         this.polygon = new Polygon();
-        this.score = 0.0;
+        this.score = 11;
 
         if (isPlayer) {
             this.neuralNetwork = null;
@@ -127,7 +128,8 @@ public class Dinosaur extends BaseEntity {
         if (!EnumDinosaurActions.JUMPING.equals(this.state) && this.referencePositionY == this.defaultPositionY) {
             this.state = EnumDinosaurActions.JUMPING;
             this.jumpSpeed = this.getConfig().getJumpSpeed();
-            playSound(super.getConfig().getPress());
+            this.playSound(super.getConfig().getPress());
+            this.score--;
         }
     }
 
@@ -136,6 +138,9 @@ public class Dinosaur extends BaseEntity {
             this.jumpSpeed -= 10;
         }
         this.state = isDown ? EnumDinosaurActions.CROUCHING : EnumDinosaurActions.RUNNING;
+        if (!isDown) {
+            this.score--;
+        }
     }
 
     public void dead() {
@@ -154,45 +159,69 @@ public class Dinosaur extends BaseEntity {
     }
 
     public void think(final BaseEntity enemy) {
+
         if (!this.isDeath()) {
-            this.score = super.getConfig().getScore();
-        }
-
-        if (super.getConfig().isCollision() && this.getBound().intersects(enemy.getBound())) {
-            this.playDeadSound();
-            this.dead();
-        }
-
-        if (this.getConfig().isShowCollision()) {
-
-            this.polygon.reset();
-            this.polygon.addPoint(
-                    getInt(this.getBound().getX() + this.getBound().getWidth()),
-                    getInt(this.getBound().getY())
-            );
-            this.polygon.addPoint(
-                    getInt(enemy.getBound().getX()),
-                    getInt((enemy instanceof Bird) ? enemy.getBound().getY() + enemy.getBound().getHeight() : enemy.getBound().getY())
-            );
-        }
-
-        if (!this.isDeath() && Objects.nonNull(this.neuralNetwork)) {
 
             final var distance = enemy.getBound().getX() - (this.getBound().getX() + this.getBound().getWidth());
-            final var output = neuralNetwork.getOutput(new double[]{
-                    (distance > 0) ? distance : 0,
-                    enemy.getBound().getWidth(),
-                    enemy.getReferencePositionY(),
-                    enemy.getBound().getHeight(),
-                    super.getConfig().getSpeed(),
-                    (this.referencePositionY + this.getBound().getHeight())
-            });
+            final var intersect = this.getBound().intersects(enemy.getBound());
 
-            if (output[0] > 0) {
-                this.jump();
+            if (!enemy.equals(this.lastEnemy) && distance < 0.0 && !intersect) {
+                this.lastEnemy = enemy;
+                if (enemy instanceof Bird) {
+                    if (this.referencePositionY == this.defaultPositionY && EnumDinosaurActions.CROUCHING.equals(this.state)) {
+                        this.score += 10;
+                    } else if (this.referencePositionY == this.defaultPositionY && EnumDinosaurActions.RUNNING.equals(this.state)) {
+                        this.score += 100;
+                    } else {
+                        this.score -= 200;
+                    }
+                } else {
+                    this.score += 10;
+                }
             }
-            if (output[1] > 0) {
-                this.down(true);
+
+            if (this.score <= 0.0 || (super.getConfig().isCollision() && intersect)) {
+                this.playDeadSound();
+                this.dead();
+            }
+
+            if (this.getConfig().isShowCollision()) {
+
+                this.polygon.reset();
+                this.polygon.addPoint(
+                        getInt(this.getBound().getX() + this.getBound().getWidth()),
+                        getInt(this.getBound().getY())
+                );
+                this.polygon.addPoint(
+                        getInt(enemy.getBound().getX()),
+                        getInt((enemy instanceof Bird) ? enemy.getBound().getY() + enemy.getBound().getHeight() : enemy.getBound().getY())
+                );
+            }
+
+            if (Objects.nonNull(this.neuralNetwork)) {
+
+                final double type;
+                if (enemy instanceof Cactus) {
+                    type = 1.0;
+                } else if ((enemy.getReferencePositionY() - enemy.getHeight()) <= this.getDefaultPositionY()) {
+                    type = 1000.0;
+                } else {
+                    type = -1000.0;
+                }
+
+                final var output = this.neuralNetwork.getOutput(new double[]{
+                        (distance > 0) ? distance : 0,
+                        type,
+                        super.getConfig().getSpeed()
+                });
+
+                if (output[0] > 0 && output[1] <= 0) {
+                    this.jump();
+                } else if (output[0] <= 0 && output[1] > 0) {
+                    this.down(true);
+                } else if (EnumDinosaurActions.CROUCHING.equals(this.state)) {
+                    this.down(false);
+                }
             }
         }
     }
@@ -211,6 +240,7 @@ public class Dinosaur extends BaseEntity {
         this.death = false;
         this.state = EnumDinosaurActions.STANDING;
         this.referencePositionY = this.defaultPositionY;
-        this.jumpSpeed = 0;
+        this.jumpSpeed = 0.0;
+        this.score = 11;
     }
 }

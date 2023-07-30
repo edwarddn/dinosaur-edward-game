@@ -8,7 +8,7 @@ public class ReplayButton extends BaseEntity {
 
     public ReplayButton(final Config config) {
         super(config, EnumTypeOfEntity.BUTTON);
-        super.framePosition = 5;
+        super.framePosition = 0;
     }
 
     @Override
