@@ -9,17 +9,14 @@ class NeuralNetworkTests {
     @Test
     void testNeuralNetwork() {
 
-        final double distance = 171.11;
-        final double width = 32.00;
-        final double height = 15.00;
-        final double length = 33.00;
+        final double distance = 600.0;
+        final double height = 100.0;
         final double speed = 30.67;
-        final double position = 15.0;
 
-        final var network = new NeuralNetwork(6, 6, 1, 2);
+        final var network = new NeuralNetwork();
         assertThat(network).isNotNull();
 
-        final var output = network.getOutput(new double[] {distance, width, height, length, speed, position});
+        final var output = network.getOutput(new double[] {distance, height, speed});
         assertThat(output).hasSize(2);
 
         assertThat(output[0]).isNotNegative();

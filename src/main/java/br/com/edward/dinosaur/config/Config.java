@@ -41,7 +41,6 @@ public class Config {
     private GameWindow window;
 
     private boolean isTraining;
-    private double score;
     private double speed;
 
     private Sprite cactusSprite;
@@ -70,7 +69,6 @@ public class Config {
         this.gameState = Objects.nonNull(this.gameState) ? gameState : EnumGameStatus.WAITING_TO_PLAY;
         this.window = window;
         this.speed = this.minSpeed;
-        this.score = 0;
 
         this.window.setIconImage(ResourceUtil.getResourceImage("icons/icon.png"));
         this.window.setResizable(this.resizable);
@@ -111,13 +109,11 @@ public class Config {
     public void restartGame(final boolean isTraining) {
         this.isTraining = isTraining;
         this.speed = this.minSpeed;
-        this.score = 0;
         this.gameState = EnumGameStatus.PLAYING;
     }
 
     public void reloadGame() {
         this.speed = this.minSpeed;
-        this.score = 0;
         this.gameState = EnumGameStatus.WAITING_TO_PLAY;
     }
 
@@ -221,19 +217,6 @@ public class Config {
     private Sprite createReplayButtonsSprite() {
         final var image = ResourceUtil.getResourceImage("img/replay-buttons.png");
         final var sprite = new Sprite(image, 72, 64, 0, 0);
-        sprite.addFrame(72, 64, 72, 0);
-        sprite.addFrame(72, 64, 144, 0);
-        sprite.addFrame(72, 64, 216, 0);
-        sprite.addFrame(72, 64, 288, 0);
-        sprite.addFrame(72, 64, 360, 0);
-
-        sprite.addFrame(72, 64, 360, 0);
-        sprite.addFrame(72, 64, 288, 0);
-        sprite.addFrame(72, 64, 216, 0);
-        sprite.addFrame(72, 64, 144, 0);
-        sprite.addFrame(72, 64, 72, 0);
-        sprite.addFrame(72, 64, 0, 0);
-
         return sprite;
     }
 
@@ -284,9 +267,5 @@ public class Config {
 
     public int getHeight() {
         return window.getHeight();
-    }
-
-    public void upScore(final double deltaTime) {
-        this.score += BigDecimal.valueOf(((0.2 * this.gameSpeed) / 1000.0) * deltaTime).setScale(6, RoundingMode.FLOOR).doubleValue();
     }
 }

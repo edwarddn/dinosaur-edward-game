@@ -8,10 +8,9 @@ import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import lombok.Getter;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.SplittableRandom;
+import java.util.*;
+import java.util.stream.Stream;
 
 @Getter
 public class ScreenManager {
@@ -21,6 +20,7 @@ public class ScreenManager {
     private final List<Dinosaur> dinosaurs;
     private final List<Dinosaur> deadDinosaurs;
     private final Dinosaur player;
+    private final NeuralNetworkDisplay neuralNetworkDisplay;
     private final Config config;
 
     public ScreenManager(final Config config, final Dinosaur player) {
@@ -30,6 +30,7 @@ public class ScreenManager {
         this.deadDinosaurs = new ArrayList<>();
         this.config = config;
         this.player = player;
+        this.neuralNetworkDisplay = new NeuralNetworkDisplay(config);
         this.reset();
     }
 
@@ -59,15 +60,13 @@ public class ScreenManager {
         }
         this.objects.removeAll(objs);
 
-        final var outOfScreenDinosaurs = dinosaurs.stream().filter(BaseEntity::isOutOfScreen).toList();
+        final var outOfScreenDinosaurs = this.dinosaurs.stream().filter(BaseEntity::isOutOfScreen).toList();
         if (!outOfScreenDinosaurs.isEmpty()) {
-            this.deadDinosaurs.clear();
             this.dinosaurs.removeAll(outOfScreenDinosaurs);
             this.deadDinosaurs.addAll(outOfScreenDinosaurs);
         }
 
         if (EnumGameStatus.PLAYING.equals(this.config.getGameState())) {
-            this.config.upScore(deltaTime);
             this.config.accelerate(deltaTime);
 
             final var enemy = objects.stream().filter(BaseEntity::isEnemy).findFirst();
@@ -80,10 +79,14 @@ public class ScreenManager {
     }
 
     public synchronized void draw(final Graphics2D g2d) {
-        for (final var item :  this.objects) {
+        for (final var item : this.objects) {
             item.draw(g2d);
         }
         int i = 0;
+        final var beastDinosaur = this.getBeastDinosaur();
+        if (this.config.isShowStatistics() && beastDinosaur.isPresent()) {
+            this.neuralNetworkDisplay.draw(g2d, beastDinosaur.get().getNeuralNetwork());
+        }
         for (final var item : this.dinosaurs) {
             item.draw(g2d);
             if (i++ > 50) {
@@ -119,7 +122,7 @@ public class ScreenManager {
     private void createDinosaurs() {
         final var neuralNetwork = NeuralNetwork.get();
         if (this.config.isTraining()) {
-            final var tenPercent = (int)(this.config.getPopulationSize() * 0.10);
+            final var tenPercent = (int) (this.config.getPopulationSize() * 0.10);
             final var ninetyPercent = this.config.getPopulationSize() - tenPercent;
 
             neuralNetwork.ifPresent(network -> this.dinosaurs.add(new Dinosaur(this.config, false, network)));
@@ -127,14 +130,14 @@ public class ScreenManager {
                 if (neuralNetwork.isPresent()) {
                     this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork(neuralNetwork.get())));
                 } else {
-                    this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork(6, 6, 1, 2)));
+                    this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork()));
                 }
             }
             for (int i = 0; i < tenPercent; i++) {
-                this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork(6, 6, 1, 2)));
+                this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork()));
             }
         } else {
-            this.dinosaurs.add(new Dinosaur(this.config, false, neuralNetwork.orElse(new NeuralNetwork(6, 6, 1, 2))));
+            this.dinosaurs.add(new Dinosaur(this.config, false, neuralNetwork.orElse(new NeuralNetwork())));
         }
     }
 
@@ -192,5 +195,10 @@ public class ScreenManager {
         }
         final var lastEnemy = enemies.get(enemies.size() - 1);
         return lastEnemy.getPositionX() + lastEnemy.getWidth() + this.random.nextInt(config.getEnemyDistance(), config.getEnemyDistance() * 2);
+    }
+
+    public Optional<Dinosaur> getBeastDinosaur() {
+        return Stream.concat(this.dinosaurs.stream(), this.deadDinosaurs.stream())
+                .max(Comparator.comparing(Dinosaur::getScore));
     }
 }
