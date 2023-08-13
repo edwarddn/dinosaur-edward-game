@@ -19,11 +19,12 @@ public class NeuralNetworkDisplay {
     }
 
     public void draw(final Graphics2D g2d, final NeuralNetwork neuralNetwork) {
-        this.draw(g2d, neuralNetwork.getInputLayer(), 250, 25);
-        this.draw(g2d, neuralNetwork.getHiddenLayer(), 150, 25);
-        this.draw(g2d, neuralNetwork.getOutputLayer(), 50, 50);
-        this.draw(g2d, neuralNetwork.getInputLayer(), 250, 25, neuralNetwork.getHiddenLayer(), 150, 25);
-        this.draw(g2d, neuralNetwork.getHiddenLayer(), 150, 25, neuralNetwork.getOutputLayer(), 50, 50);
+        this.draw(g2d, neuralNetwork.getInputLayer(), 360, 25);
+        this.draw(g2d, neuralNetwork.getHiddenLayer(), 210, 25);
+        this.draw(g2d, neuralNetwork.getOutputLayer(), 60, 125);
+
+        this.draw(g2d, neuralNetwork.getInputLayer(), 360, 25, neuralNetwork.getHiddenLayer(), 210, 25);
+        this.draw(g2d, neuralNetwork.getHiddenLayer(), 210, 25, neuralNetwork.getOutputLayer(), 60, 125);
     }
 
     private void draw(final Graphics2D g2d, final Layer l, final int x, final int y) {

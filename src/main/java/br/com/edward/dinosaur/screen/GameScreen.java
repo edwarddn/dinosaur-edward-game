@@ -54,7 +54,7 @@ public class GameScreen extends JPanel implements Runnable {
         } else if (EnumGameStatus.PLAYING.equals(this.config.getGameState())) {
             this.player.update(deltaTime);
             this.screenManager.update(deltaTime);
-            final long score = this.screenManager.getBeastDinosaur().map(Dinosaur::getScore).orElse(0L);
+            final long score = this.screenManager.getBetterDinosaur().map(Dinosaur::getScore).orElse(0L);
             this.scoreLabel.update(score);
             this.scoreLabel.update(this.player.getScore(), score);
             if (this.screenManager.getDinosaurs().isEmpty() && this.player.isDeath()) {
@@ -83,7 +83,7 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
 
-    private void gameDraw(final Image img) {
+    private void gameDraw(final BufferedImage img) {
         Graphics g2 = this.getGraphics();
         g2.drawImage(img, 0, 0, null);
         g2.dispose();
@@ -148,15 +148,15 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     private int getGeneration() {
-        return this.screenManager.getBeastDinosaur()
+        return this.screenManager.getBetterDinosaur()
                 .map(dinosaur -> dinosaur.getNeuralNetwork().getGeneration())
                 .orElse(0);
     }
 
     private void saveNeuralNetwork() {
-        final var beastDinosaur = this.screenManager.getBeastDinosaur();
-        if (beastDinosaur.isPresent() && this.config.isTraining()) {
-            beastDinosaur.get().getNeuralNetwork().save();
+        final var betterDinosaur = this.screenManager.getBetterDinosaur();
+        if (betterDinosaur.isPresent() && this.config.isTraining()) {
+            betterDinosaur.get().getNeuralNetwork().save();
         }
     }
 

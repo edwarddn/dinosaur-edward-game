@@ -83,15 +83,20 @@ public class ScreenManager {
             item.draw(g2d);
         }
         int i = 0;
-        final var beastDinosaur = this.getBeastDinosaur();
-        if (this.config.isShowStatistics() && beastDinosaur.isPresent()) {
-            this.neuralNetworkDisplay.draw(g2d, beastDinosaur.get().getNeuralNetwork());
-        }
         for (final var item : this.dinosaurs) {
+            item.declareAsNormal();
             item.draw(g2d);
             if (i++ > 50) {
                 break;
             }
+        }
+        final var betterDinosaur = this.getBetterDinosaur();
+        if (this.config.isShowStatistics() && betterDinosaur.isPresent()) {
+            this.neuralNetworkDisplay.draw(g2d, betterDinosaur.get().getNeuralNetwork());
+        }
+        if (betterDinosaur.isPresent()) {
+            betterDinosaur.get().declareAsBetter();
+            betterDinosaur.get().draw(g2d);
         }
     }
 
@@ -197,7 +202,7 @@ public class ScreenManager {
         return lastEnemy.getPositionX() + lastEnemy.getWidth() + this.random.nextInt(config.getEnemyDistance(), config.getEnemyDistance() * 2);
     }
 
-    public Optional<Dinosaur> getBeastDinosaur() {
+    public Optional<Dinosaur> getBetterDinosaur() {
         return Stream.concat(this.dinosaurs.stream(), this.deadDinosaurs.stream())
                 .max(Comparator.comparing(Dinosaur::getScore));
     }

@@ -20,6 +20,7 @@ import static br.com.edward.dinosaur.helper.IntUtil.getInt;
 @Getter
 public class Dinosaur extends BaseEntity {
 
+    private boolean better;
     private BaseEntity lastEnemy;
     private long score;
     private final NeuralNetwork neuralNetwork;
@@ -33,8 +34,9 @@ public class Dinosaur extends BaseEntity {
 
     public Dinosaur(final Config config, final boolean isPlayer, final NeuralNetwork neuralNetwork) {
         super(config, EnumTypeOfEntity.PLAYER);
+        this.better = false;
         this.polygon = new Polygon();
-        this.score = 11;
+        this.score = 100;
 
         if (isPlayer) {
             this.neuralNetwork = null;
@@ -59,12 +61,21 @@ public class Dinosaur extends BaseEntity {
 
     @Override
     protected Sprite getSprite() {
+        if (this.better) {
+            return switch (this.state) {
+                case STANDING -> super.getConfig().getBestDinosaurStandingSprite();
+                case JUMPING -> super.getConfig().getBestDinosaurJumpSprite();
+                case CROUCHING -> super.getConfig().getBestDinosaurDownSprite();
+                case DEAD -> super.getConfig().getBestDinosaurDeathSprite();
+                default -> super.getConfig().getBestDinosaurRunSprite();
+            };
+        }
         return switch (this.state) {
-            case STANDING -> super.getConfig().getDinoStandingSprite();
-            case JUMPING -> super.getConfig().getDinoJumpSprite();
-            case CROUCHING -> super.getConfig().getDinoDownSprite();
-            case DEAD -> super.getConfig().getDinoDeathSprite();
-            default -> super.getConfig().getDinoRunSprite();
+            case STANDING -> super.getConfig().getDinosaurStandingSprite();
+            case JUMPING -> super.getConfig().getDinosaurJumpSprite();
+            case CROUCHING -> super.getConfig().getDinosaurDownSprite();
+            case DEAD -> super.getConfig().getDinosaurDeathSprite();
+            default -> super.getConfig().getDinosaurRunSprite();
         };
     }
 
@@ -173,7 +184,7 @@ public class Dinosaur extends BaseEntity {
                     } else if (this.referencePositionY == this.defaultPositionY && EnumDinosaurActions.RUNNING.equals(this.state)) {
                         this.score += 100;
                     } else {
-                        this.score -= 200;
+                        this.score -= 150;
                     }
                 } else {
                     this.score += 10;
@@ -200,18 +211,12 @@ public class Dinosaur extends BaseEntity {
 
             if (Objects.nonNull(this.neuralNetwork)) {
 
-                final double type;
-                if (enemy instanceof Cactus) {
-                    type = 1.0;
-                } else if ((enemy.getReferencePositionY() - enemy.getHeight()) <= this.getDefaultPositionY()) {
-                    type = 1000.0;
-                } else {
-                    type = -1000.0;
-                }
-
                 final var output = this.neuralNetwork.getOutput(new double[]{
                         (distance > 0) ? distance : 0,
-                        type,
+                        enemy.getReferencePositionY(),
+                        enemy.getBound().getWidth(),
+                        enemy.getBound().getHeight(),
+                        (enemy instanceof Cactus) ? (enemy.getReferencePositionY() - enemy.getHeight()) : this.getReferencePositionY(),
                         super.getConfig().getSpeed()
                 });
 
@@ -241,6 +246,15 @@ public class Dinosaur extends BaseEntity {
         this.state = EnumDinosaurActions.STANDING;
         this.referencePositionY = this.defaultPositionY;
         this.jumpSpeed = 0.0;
-        this.score = 11;
+        this.score = 100;
+        this.better = false;
+    }
+
+    public void declareAsNormal() {
+        this.better = false;
+    }
+
+    public void declareAsBetter() {
+        this.better = true;
     }
 }

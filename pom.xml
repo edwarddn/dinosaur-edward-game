@@ -12,7 +12,7 @@
 
     <groupId>br.com.edward</groupId>
     <artifactId>dinosaur</artifactId>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
 
     <name>dinosaur</name>
     <description>Dinosaur Edward Game</description>

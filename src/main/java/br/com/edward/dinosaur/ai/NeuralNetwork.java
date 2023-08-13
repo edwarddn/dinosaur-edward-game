@@ -16,7 +16,7 @@ public class NeuralNetwork implements Serializable {
     private final Layer outputLayer;
 
     public NeuralNetwork() {
-        this(3, 3, 2);
+        this(6, 6, 2);
     }
 
     private NeuralNetwork(final int inputs, final int hidden, final int outputs) {

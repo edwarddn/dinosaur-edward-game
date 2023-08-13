@@ -1,12 +1,13 @@
 package br.com.edward.dinosaur.record;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
-public record Sprite(Image image, List<Frame> frames) {
+public record Sprite(BufferedImage image, List<Frame> frames) {
 
-    public Sprite(final Image image, final int width, final int height, final int x, final int y) {
+    public Sprite(final BufferedImage image, final int width, final int height, final int x, final int y) {
         this(image, new ArrayList<>());
         this.addFrame(width, height, x, y);
     }

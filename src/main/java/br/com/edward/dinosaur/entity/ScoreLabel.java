@@ -30,7 +30,7 @@ public class ScoreLabel {
                 this.score++;
                 if (this.score > this.highScore) {
                     this.highScore = this.score;
-                    if (this.highScore % 100 == 0) {
+                    if (this.highScore % 1000 == 0) {
                         ResourceUtil.playSound(this.config.getReached());
                     }
                 }
@@ -64,7 +64,6 @@ public class ScoreLabel {
     }
 
     public void reset() {
-        this.highScore = 0;
         this.score = 0;
         this.youScore = 0;
         this.aiScore = 0;
