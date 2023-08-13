@@ -1,6 +1,6 @@
 # Dinosaur Edward Game
 
-![Dinosaur Edward Game](game_screenshot.gif)
+![Dinosaur Edward Game](game-screenshot.gif)
 
 Dinosaur Edward Game is a game based on the popular Chrome dinosaur game (T-rex), developed in Java 17, using only Java without any auxiliary libraries.
 The game is created with the help of Spring Boot to start the system and Lombok to make the code less verbose.
