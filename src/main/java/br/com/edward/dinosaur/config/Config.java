@@ -10,6 +10,7 @@ import lombok.Getter;
 import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Objects;
@@ -53,11 +54,17 @@ public class Config {
     private Sprite menuButtonsSprite;
     private Sprite gameOverSprite;
 
-    private Sprite dinoStandingSprite;
-    private Sprite dinoRunSprite;
-    private Sprite dinoJumpSprite;
-    private Sprite dinoDownSprite;
-    private Sprite dinoDeathSprite;
+    private Sprite dinosaurStandingSprite;
+    private Sprite dinosaurRunSprite;
+    private Sprite dinosaurJumpSprite;
+    private Sprite dinosaurDownSprite;
+    private Sprite dinosaurDeathSprite;
+
+    private Sprite bestDinosaurStandingSprite;
+    private Sprite bestDinosaurRunSprite;
+    private Sprite bestDinosaurJumpSprite;
+    private Sprite bestDinosaurDownSprite;
+    private Sprite bestDinosaurDeathSprite;
 
     private Clip press;
     private Clip hit;
@@ -87,11 +94,18 @@ public class Config {
         this.gameOverSprite = this.createGameOverSprite();
 
         final var image = ResourceUtil.getResourceImage("img/dinosaurs.png");
-        this.dinoStandingSprite = this.createDinoStandingSprite(image);
-        this.dinoRunSprite = this.createDinoRunSprite(image);
-        this.dinoJumpSprite = this.createDinoJumpSprite(image);
-        this.dinoDownSprite = this.createDinoDownSprite(image);
-        this.dinoDeathSprite = this.createDinoDeathSprite(image);
+        this.dinosaurStandingSprite = this.createDinoStandingSprite(image);
+        this.dinosaurRunSprite = this.createDinoRunSprite(image);
+        this.dinosaurJumpSprite = this.createDinoJumpSprite(image);
+        this.dinosaurDownSprite = this.createDinoDownSprite(image);
+        this.dinosaurDeathSprite = this.createDinoDeathSprite(image);
+
+        final var yellowImage = ResourceUtil.setColorToYellow(image);
+        this.bestDinosaurStandingSprite = this.createDinoStandingSprite(yellowImage);
+        this.bestDinosaurRunSprite = this.createDinoRunSprite(yellowImage);
+        this.bestDinosaurJumpSprite = this.createDinoJumpSprite(yellowImage);
+        this.bestDinosaurDownSprite = this.createDinoDownSprite(yellowImage);
+        this.bestDinosaurDeathSprite = this.createDinoDeathSprite(yellowImage);
 
         this.press = ResourceUtil.getResourceSound("audio/press.wav");
         this.hit = ResourceUtil.getResourceSound("audio/hit.wav");
@@ -233,29 +247,29 @@ public class Config {
         return new Sprite(image, 383, 23, 0, 0);
     }
 
-    private Sprite createDinoStandingSprite(final Image image) {
+    private Sprite createDinoStandingSprite(final BufferedImage image) {
         final var sprite = new Sprite(image, 88, 94, 0, 0);
         sprite.addFrame(88, 94, 88, 0);
         return sprite;
     }
 
-    private Sprite createDinoRunSprite(final Image image) {
+    private Sprite createDinoRunSprite(final BufferedImage image) {
         final var sprite = new Sprite(image, 88, 94, 176, 0);
         sprite.addFrame(88, 94, 264, 0);
         return sprite;
     }
 
-    private Sprite createDinoJumpSprite(final Image image) {
+    private Sprite createDinoJumpSprite(final BufferedImage image) {
         return new Sprite(image, 88, 94, 0, 0);
     }
 
-    private Sprite createDinoDownSprite(final Image image) {
+    private Sprite createDinoDownSprite(final BufferedImage image) {
         final var sprite = new Sprite(image, 118, 94, 528, 0);
         sprite.addFrame(118, 94, 646, 0);
         return sprite;
     }
 
-    private Sprite createDinoDeathSprite(final Image image) {
+    private Sprite createDinoDeathSprite(final BufferedImage image) {
         final var sprite = new Sprite(image, 88, 94, 440, 0);
         sprite.addFrame(88, 94, 352, 0);
         return sprite;
