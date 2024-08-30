@@ -36,6 +36,10 @@ public class NeuralNetwork implements Serializable {
         this.outputLayer = new Layer(random, neuralNetwork.getOutputLayer());
     }
 
+    public static Optional<NeuralNetwork> get() {
+        return ObjectUtil.readObjectFromFile(NeuralNetwork.class);
+    }
+
     public double[] getOutput(final double[] inputs) {
         final var layerInputs = new double[inputs.length];
         System.arraycopy(inputs, 0, layerInputs, 0, inputs.length);
@@ -47,9 +51,5 @@ public class NeuralNetwork implements Serializable {
 
     public void save() {
         ObjectUtil.writeObjectToFile(this);
-    }
-
-    public static Optional<NeuralNetwork> get() {
-        return ObjectUtil.readObjectFromFile(NeuralNetwork.class);
     }
 }

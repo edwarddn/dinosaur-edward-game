@@ -20,14 +20,13 @@ import static br.com.edward.dinosaur.helper.IntUtil.getInt;
 @Getter
 public class Dinosaur extends BaseEntity {
 
-    private boolean better;
-    private BaseEntity lastEnemy;
-    private long score;
     private final NeuralNetwork neuralNetwork;
-
     private final Polygon polygon;
     private final double defaultPositionX;
     private final double defaultPositionY;
+    private boolean better;
+    private BaseEntity lastEnemy;
+    private long score;
     private EnumDinosaurActions state;
     private double jumpSpeed;
     private boolean death;
@@ -182,9 +181,9 @@ public class Dinosaur extends BaseEntity {
                     if (this.referencePositionY == this.defaultPositionY && EnumDinosaurActions.CROUCHING.equals(this.state)) {
                         this.score += 10;
                     } else if (this.referencePositionY == this.defaultPositionY && EnumDinosaurActions.RUNNING.equals(this.state)) {
-                        this.score += 100;
+                        this.score += 5;
                     } else {
-                        this.score -= 150;
+                        this.score -= 50;
                     }
                 } else {
                     this.score += 10;
