@@ -19,7 +19,7 @@ class NeuralNetworkTests {
         final var network = new NeuralNetwork();
         assertThat(network).isNotNull();
 
-        final var output = network.getOutput(new double[] {distance, position, width, height, myPosition, speed});
+        final var output = network.getOutput(new double[]{distance, position, width, height, myPosition, speed});
         assertThat(output).hasSize(2);
 
         assertThat(output[0]).isNotNegative();

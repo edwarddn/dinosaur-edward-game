@@ -32,6 +32,6 @@ public class Star extends BaseEntity {
 
     @Override
     public double getPositionY() {
-        return (this.referencePositionY / 100F) *  super.getConfig().getHeight();
+        return (this.referencePositionY / 100F) * super.getConfig().getHeight();
     }
 }

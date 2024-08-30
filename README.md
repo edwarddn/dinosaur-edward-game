@@ -2,7 +2,7 @@
 
 ![Dinosaur Edward Game](game-screenshot.gif)
 
-Dinosaur Edward Game is a game based on the popular Chrome dinosaur game (T-rex), developed in Java 17, using only Java without any auxiliary libraries.
+Dinosaur Edward Game is a game based on the popular Chrome dinosaur game (T-rex), developed in Java 21, using only Java without any auxiliary libraries.
 The game is created with the help of Spring Boot to start the system and Lombok to make the code less verbose.
 Additionally, the game features an artificial intelligence that uses natural selection in a genetic algorithm, allowing you to choose between playing against the network or training it.
 
@@ -21,7 +21,7 @@ Enjoy the game and have fun!
 ## Main Features
 
 - The game is inspired by the Chrome dinosaur game (T-rex).
-- Developed in Java 17, using only Java without any auxiliary libraries.
+- Developed in Java 21, using only Java without any auxiliary libraries.
 - Uses Spring Boot to start the system.
 - Uses Lombok to make the code less verbose.
 - The game features an artificial intelligence based on a neural network trained by a genetic algorithm.
@@ -48,11 +48,11 @@ Enjoy the game and have fun!
 
 ## System Requirements
 
-- Java Development Kit (JDK) 17
+- Java Development Kit (JDK) 21
 
 ## How to Run the Game
 
-1. Make sure you have Java 17 installed on your system.
+1. Make sure you have Java 21 installed on your system.
 2. Clone this repository to your development environment.
 3. Navigate to the root directory of the project.
 4. Run the following commands in the terminal to compile and execute the game:
