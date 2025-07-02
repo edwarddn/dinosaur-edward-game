@@ -1,30 +1,26 @@
 package br.com.edward.dinosaur.entity;
 
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Sprite;
-
-import java.util.concurrent.atomic.AtomicInteger;
+import br.com.edward.dinosaur.screen.GameState;
 
 public class Moon extends BaseEntity {
 
-    public static final AtomicInteger MOON_PHASE = new AtomicInteger(0);
-
-    public Moon(final Config config) {
-        super(config, EnumTypeOfEntity.MOON);
-        this.referencePositionX = config.getWidth();
+    public Moon(final GameState gameState) {
+        super(gameState, EnumTypeOfEntity.MOON);
+        this.referencePositionX = gameState.getWidth();
         this.referencePositionY = super.getRandom().nextInt(3, 51);
-        this.speedX = super.getConfig().getSpeed() / 50;
-        this.framePosition = MOON_PHASE.getAndIncrement();
+        this.speedX = gameState.getCurrentSpeed() / 50;
+        this.framePosition = gameState.getMoonPhase().getAndIncrement();
         if (this.framePosition >= this.getSprite().frames().size()) {
             this.framePosition = 0;
-            MOON_PHASE.set(0);
+            gameState.getMoonPhase().set(0);
         }
     }
 
     @Override
     protected Sprite getSprite() {
-        return super.getConfig().getMoonSprite();
+        return super.getAssetManager().getMoonSprite();
     }
 
     @Override
@@ -34,6 +30,6 @@ public class Moon extends BaseEntity {
 
     @Override
     public double getPositionY() {
-        return (this.referencePositionY / 100F) * super.getConfig().getHeight();
+        return (this.referencePositionY / 100F) * super.getGameState().getHeight();
     }
 }

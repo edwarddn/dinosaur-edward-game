@@ -1,18 +1,18 @@
 package br.com.edward.dinosaur.entity;
 
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Sprite;
+import br.com.edward.dinosaur.screen.GameState;
 
 import java.awt.*;
 import java.util.SplittableRandom;
 
 public class Bird extends BaseEntity {
 
-    public Bird(final Config config, final double positionX) {
-        super(config, EnumTypeOfEntity.ENEMY);
+    public Bird(final GameState gameState, final double positionX) {
+        super(gameState, EnumTypeOfEntity.ENEMY);
         this.referencePositionX = positionX;
-        this.speedX = super.getConfig().getSpeed();
+        this.speedX = gameState.getCurrentSpeed();
         switch (new SplittableRandom().nextInt(0, 4)) {
             case 0 -> this.referencePositionY = 210;
             case 1 -> this.referencePositionY = 230;
@@ -40,7 +40,7 @@ public class Bird extends BaseEntity {
 
     @Override
     protected Sprite getSprite() {
-        return super.getConfig().getBirdsSprite();
+        return super.getAssetManager().getBirdsSprite();
     }
 
     @Override
@@ -50,6 +50,6 @@ public class Bird extends BaseEntity {
 
     @Override
     public double getPositionY() {
-        return super.getConfig().getHeight() - this.referencePositionY;
+        return super.getGameState().getHeight() - this.referencePositionY;
     }
 }

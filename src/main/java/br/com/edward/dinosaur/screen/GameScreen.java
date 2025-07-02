@@ -1,6 +1,5 @@
 package br.com.edward.dinosaur.screen;
 
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.entity.*;
 import br.com.edward.dinosaur.enuns.EnumGameStatus;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +12,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.text.DecimalFormat;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -20,7 +22,7 @@ public class GameScreen extends JPanel implements Runnable {
 
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
 
-    private final transient Config config;
+    private final transient GameState gameState;
     private final transient ScreenManager screenManager;
     private final transient ScoreLabel scoreLabel;
     private final transient Dinosaur player;
@@ -28,122 +30,135 @@ public class GameScreen extends JPanel implements Runnable {
     private final transient MenuButton versusButton;
     private final transient MenuButton trainingButton;
     private final transient GameOverLabel gameOverLabel;
-    private final transient Thread thread;
+    private final transient Thread gameThread;
+    private final transient Queue<Runnable> actionQueue;
 
-    public GameScreen(final Config config) {
-        this.config = config;
-        this.scoreLabel = new ScoreLabel(config);
-        this.player = new Dinosaur(config, true, null);
-        this.replayButton = new ReplayButton(config);
-        this.versusButton = new MenuButton(config, 0);
-        this.trainingButton = new MenuButton(config, 1);
-        this.gameOverLabel = new GameOverLabel(config);
-        this.screenManager = new ScreenManager(config, this.player);
-        this.createListener();
-        this.thread = new Thread(this);
+    private transient BufferedImage bufferedImage;
+    private volatile int currentFps;
+
+    public GameScreen(final GameState gameState) {
+        this.gameState = gameState;
+        this.scoreLabel = new ScoreLabel(this.gameState);
+        this.player = new Dinosaur(this.gameState, true, null);
+        this.replayButton = new ReplayButton(this.gameState);
+        this.versusButton = new MenuButton(this.gameState, 0);
+        this.trainingButton = new MenuButton(this.gameState, 1);
+        this.gameOverLabel = new GameOverLabel(this.gameState);
+        this.screenManager = new ScreenManager(this.gameState, this.player);
+        this.actionQueue = new ConcurrentLinkedQueue<>();
+        this.createListeners();
+        this.gameThread = new Thread(this);
     }
 
     public void startGame() {
-        this.thread.start();
+        this.gameThread.start();
+    }
+
+    private void processActions() {
+        Runnable action;
+        while ((action = actionQueue.poll()) != null) {
+            action.run();
+        }
     }
 
     private void gameUpdate(final double deltaTime) {
-        if (EnumGameStatus.WAITING_TO_PLAY.equals(this.config.getGameState())) {
+        if (EnumGameStatus.WAITING_TO_PLAY.equals(this.gameState.getGameStatus())) {
             this.screenManager.update(deltaTime);
             this.player.update(deltaTime);
-        } else if (EnumGameStatus.PLAYING.equals(this.config.getGameState())) {
+        } else if (EnumGameStatus.PLAYING.equals(this.gameState.getGameStatus())) {
             this.player.update(deltaTime);
             this.screenManager.update(deltaTime);
             final long score = this.screenManager.getBetterDinosaur().map(Dinosaur::getScore).orElse(0L);
-            this.scoreLabel.update(score);
-            this.scoreLabel.update(this.player.getScore(), score);
-            if (this.screenManager.getDinosaurs().isEmpty() && this.player.isDeath()) {
+            this.scoreLabel.updateAnimation(score);
+            this.scoreLabel.setScores(this.player.getScore(), score);
+            if ((this.screenManager.getDinosaurs().isEmpty() && this.player.isDeath()) || this.gameState.isGameOverTime()) {
                 this.gameOver();
             }
         }
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        if (Objects.isNull(this.bufferedImage) || this.bufferedImage.getWidth() != getWidth() || this.bufferedImage.getHeight() != getHeight()) {
+            this.bufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+        }
+
+        final var g2d = this.bufferedImage.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+        gameRender(g2d);
+        statisticsRender(g2d);
+
+        g2d.dispose();
+        g.drawImage(this.bufferedImage, 0, 0, null);
+    }
+
     private void gameRender(final Graphics2D g2d) {
         g2d.setColor(Color.decode("#202124"));
         g2d.fillRect(0, 0, getWidth(), getHeight());
-        if (EnumGameStatus.WAITING_TO_PLAY.equals(this.config.getGameState())) {
+
+        if (EnumGameStatus.WAITING_TO_PLAY.equals(this.gameState.getGameStatus())) {
             this.screenManager.draw(g2d);
             this.player.draw(g2d);
             this.versusButton.draw(g2d);
             this.trainingButton.draw(g2d);
-        } else if (EnumGameStatus.PLAYING.equals(this.config.getGameState()) || EnumGameStatus.GAME_OVER.equals(this.config.getGameState())) {
+        } else if (EnumGameStatus.PLAYING.equals(this.gameState.getGameStatus()) || EnumGameStatus.GAME_OVER.equals(this.gameState.getGameStatus())) {
             this.screenManager.draw(g2d);
             this.scoreLabel.draw(g2d);
             this.player.draw(g2d);
-            if (EnumGameStatus.GAME_OVER.equals(this.config.getGameState())) {
+            if (EnumGameStatus.GAME_OVER.equals(this.gameState.getGameStatus())) {
                 this.gameOverLabel.draw(g2d);
                 this.replayButton.draw(g2d);
             }
         }
     }
 
+    private void statisticsRender(final Graphics2D g2d) {
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(gameState.getAssetManager().getFont().deriveFont(12f));
+        g2d.drawString("FPS: " + this.currentFps, 5, 15);
 
-    private void gameDraw(final BufferedImage img) {
-        Graphics g2 = this.getGraphics();
-        g2.drawImage(img, 0, 0, null);
-        g2.dispose();
+        if (this.gameState.getConfig().isShowStatistics()) {
+            g2d.drawString("Speed: " + DECIMAL_FORMAT.format(this.gameState.getCurrentSpeed()), 5, 35);
+            g2d.drawString("Generation: " + getGeneration(), 5, 55);
+            g2d.drawString("Population: " + this.screenManager.getDinosaurs().size(), 5, 75);
+        }
     }
 
     @Override
     public void run() {
-        final long msPerFrame = (long) Math.floor(1000.0 / config.getFps());
+        final long msPerFrame = (long) Math.floor(1000.0 / gameState.getConfig().getFps());
         long previousTime = System.currentTimeMillis();
+        long fpsTimer = System.currentTimeMillis();
+        int frameCount = 0;
 
-        while (true) {
-
-            final int width = config.getWidth();
-            final int height = config.getHeight();
-
-            final var image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-            final var g2d = (Graphics2D) image.getGraphics();
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
+        while (Thread.currentThread() == this.gameThread) {
             try {
-                int fps = 0;
-                int i = 0;
-                long start = System.currentTimeMillis();
+                final var startTime = System.currentTimeMillis();
+                final var deltaTime = (startTime - previousTime);
+                previousTime = startTime;
 
-                do {
-                    final var startTime = System.currentTimeMillis();
-                    final var deltaTime = (startTime - previousTime);
+                processActions();
+                gameUpdate(deltaTime);
+                repaint();
 
-                    i++;
-                    final double elapsedSeconds = (startTime - start) / 1000.0;
-                    if (elapsedSeconds >= 1.0) {
-                        fps = i;
-                        i = 0;
-                        start = startTime;
-                    }
+                frameCount++;
+                if (System.currentTimeMillis() - fpsTimer >= 1000) {
+                    this.currentFps = frameCount;
+                    frameCount = 0;
+                    fpsTimer = System.currentTimeMillis();
+                }
 
-                    this.gameRender(g2d);
-                    this.statisticsRender(g2d, fps);
-                    this.gameDraw(image);
-                    this.gameUpdate(deltaTime);
-
-                    final var waitTime = msPerFrame - (System.currentTimeMillis() - startTime);
-                    TimeUnit.MILLISECONDS.sleep(waitTime > 0 ? waitTime : 0);
-                    previousTime = startTime;
-                } while (width == config.getWidth() && height == config.getHeight());
+                final var waitTime = msPerFrame - (System.currentTimeMillis() - startTime);
+                if (waitTime > 0) {
+                    TimeUnit.MILLISECONDS.sleep(waitTime);
+                }
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                Thread.currentThread().interrupt();
             }
-        }
-    }
-
-    private void statisticsRender(final Graphics2D g2d, int fps) {
-        g2d.setColor(Color.WHITE);
-        g2d.setFont(config.getFont().deriveFont(12f));
-        g2d.drawString("FPS.: " + fps, 5, 15);
-
-        if (this.config.isShowStatistics()) {
-            g2d.drawString("Speed.: " + DECIMAL_FORMAT.format(this.config.getSpeed()), 5, 35);
-            g2d.drawString("Generation.: " + getGeneration(), 5, 55);
-            g2d.drawString("Population.: " + this.screenManager.getDinosaurs().size(), 5, 75);
         }
     }
 
@@ -154,18 +169,17 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     private void saveNeuralNetwork() {
-        final var betterDinosaur = this.screenManager.getBetterDinosaur();
-        if (betterDinosaur.isPresent() && this.config.isTraining()) {
-            betterDinosaur.get().getNeuralNetwork().save();
-        }
+        this.screenManager.getBetterDinosaur()
+                .filter(d -> this.gameState.isTraining())
+                .ifPresent(d -> d.getNeuralNetwork().save());
     }
 
     private void gameOver() {
-        this.gameOver(this.config.isTraining());
+        this.gameOver(this.gameState.isTraining());
     }
 
     private void gameOver(final boolean isTraining) {
-        this.config.gameOver();
+        this.gameState.gameOver();
         this.saveNeuralNetwork();
         if (isTraining) {
             this.restartGame();
@@ -173,11 +187,11 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     private void restartGame() {
-        this.restartGame(this.config.isTraining());
+        this.restartGame(this.gameState.isTraining());
     }
 
     private void restartGame(final boolean isTraining) {
-        this.config.restartGame(isTraining);
+        this.gameState.restartGame(isTraining);
         this.screenManager.reset();
         this.scoreLabel.reset();
         if (!isTraining) {
@@ -187,10 +201,10 @@ public class GameScreen extends JPanel implements Runnable {
 
     private void reloadGame() {
         this.restartGame(false);
-        this.config.reloadGame();
+        this.gameState.reloadGame();
     }
 
-    private void createListener() {
+    private void createListeners() {
         this.setFocusable(true);
         this.addKeyListener(new KeyAdapter() {
             @Override
@@ -212,42 +226,41 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     private void customKeyPressed(final KeyEvent e) {
-        switch (this.config.getGameState()) {
+        switch (this.gameState.getGameStatus()) {
             case PLAYING -> {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
-                    this.player.jump();
+                    actionQueue.add(() -> player.jump());
                 } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    this.player.down(true);
+                    actionQueue.add(() -> player.down(true));
                 } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    this.gameOver(false);
+                    actionQueue.add(() -> gameOver(false));
                 }
             }
             case GAME_OVER -> {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    this.restartGame();
+                    actionQueue.add(this::restartGame);
                 } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    this.reloadGame();
+                    actionQueue.add(this::reloadGame);
                 }
             }
+            default -> {}
         }
     }
 
     private void customKeyReleased(final KeyEvent e) {
-        if (EnumGameStatus.PLAYING.equals(this.config.getGameState()) && e.getKeyCode() == KeyEvent.VK_DOWN) {
-            this.player.down(false);
+        if (EnumGameStatus.PLAYING.equals(this.gameState.getGameStatus()) && e.getKeyCode() == KeyEvent.VK_DOWN) {
+            actionQueue.add(() -> player.down(false));
         }
     }
 
     private void customMouseClicked(final MouseEvent e) {
-        if (EnumGameStatus.GAME_OVER.equals(this.config.getGameState()) && (this.replayButton.getBound().contains(e.getX(), e.getY()))) {
-            this.restartGame();
-        }
-        if (EnumGameStatus.WAITING_TO_PLAY.equals(this.config.getGameState())) {
+        if (EnumGameStatus.GAME_OVER.equals(this.gameState.getGameStatus()) && (this.replayButton.getBound().contains(e.getX(), e.getY()))) {
+            actionQueue.add(this::restartGame);
+        } else if (EnumGameStatus.WAITING_TO_PLAY.equals(this.gameState.getGameStatus())) {
             if (this.versusButton.getBound().contains(e.getX(), e.getY())) {
-                this.restartGame(false);
-            }
-            if (this.trainingButton.getBound().contains(e.getX(), e.getY())) {
-                this.restartGame(true);
+                actionQueue.add(() -> restartGame(false));
+            } else if (this.trainingButton.getBound().contains(e.getX(), e.getY())) {
+                actionQueue.add(() -> restartGame(true));
             }
         }
     }

@@ -4,11 +4,11 @@ import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Frame;
 import br.com.edward.dinosaur.record.Sprite;
+import br.com.edward.dinosaur.resource.AssetManager;
+import br.com.edward.dinosaur.screen.GameState;
 import lombok.Getter;
 
 import java.awt.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.SplittableRandom;
 
 import static br.com.edward.dinosaur.helper.IntUtil.getInt;
@@ -16,7 +16,7 @@ import static br.com.edward.dinosaur.helper.IntUtil.getInt;
 @Getter
 public abstract class BaseEntity {
 
-    private final Config config;
+    private final GameState gameState;
     private final SplittableRandom random;
     private final EnumTypeOfEntity type;
 
@@ -28,8 +28,8 @@ public abstract class BaseEntity {
     protected double speedX;
     protected double speedY;
 
-    protected BaseEntity(final Config config, final EnumTypeOfEntity type) {
-        this.config = config;
+    protected BaseEntity(final GameState gameState, final EnumTypeOfEntity type) {
+        this.gameState = gameState;
         this.random = new SplittableRandom();
         this.type = type;
 
@@ -39,6 +39,14 @@ public abstract class BaseEntity {
         this.speedX = 0;
         this.speedY = 0;
         this.previousTime = 0;
+    }
+
+    public AssetManager getAssetManager() {
+        return this.gameState.getAssetManager();
+    }
+
+    public Config getConfig() {
+        return this.gameState.getConfig();
     }
 
     public Rectangle getBound() {
@@ -88,7 +96,7 @@ public abstract class BaseEntity {
 
     public void draw(final Graphics2D g2d) {
         this.getSprite().draw(g2d, getInt(this.getPositionX()), getInt(this.getPositionY()), this.getFramePosition());
-        if (this.getConfig().isShowCollision()) {
+        if (this.getGameState().getConfig().isShowCollision()) {
             g2d.setColor(Color.BLUE);
             final var bound = getBound();
             g2d.drawRect(bound.x, bound.y, bound.width, bound.height);
@@ -96,7 +104,7 @@ public abstract class BaseEntity {
     }
 
     public void update(final double deltaTime) {
-        this.referencePositionX -= new BigDecimal(((this.getSpeedX() * config.getGameSpeed()) / 1000.0) * deltaTime).setScale(6, RoundingMode.FLOOR).doubleValue();
+        this.referencePositionX -= ((this.getSpeedX() * this.getGameState().getConfig().getGameSpeed()) / 1000.0) * deltaTime;
     }
 
     protected abstract Sprite getSprite();
