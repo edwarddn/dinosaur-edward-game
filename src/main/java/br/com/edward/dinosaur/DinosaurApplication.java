@@ -1,6 +1,7 @@
 package br.com.edward.dinosaur;
 
 import br.com.edward.dinosaur.config.Config;
+import br.com.edward.dinosaur.resource.AssetManager;
 import br.com.edward.dinosaur.screen.GameWindow;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -24,8 +25,8 @@ public class DinosaurApplication implements CommandLineRunner {
             final var config = Config.builder()
                     .title("Dinosaur Edward Game")
                     .resizable(true)
-                    .width(1536)
-                    .height(600)
+                    .initialWidth(1536)
+                    .initialHeight(600)
                     .gameSpeed(60)
                     .fps(120)
                     .minSpeed(18)
@@ -40,8 +41,10 @@ public class DinosaurApplication implements CommandLineRunner {
                     .collision(true)
                     .build();
 
-            final GameWindow game = new GameWindow(config);
-            game.startGame();
+            AssetManager.getInstance().loadAssets();
+
+            final var gameWindow = new GameWindow(config, AssetManager.getInstance());
+            gameWindow.startGame();
         });
     }
 }

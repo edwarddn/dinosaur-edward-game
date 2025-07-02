@@ -3,7 +3,7 @@ package br.com.edward.dinosaur.entity;
 import br.com.edward.dinosaur.ai.Layer;
 import br.com.edward.dinosaur.ai.NeuralNetwork;
 import br.com.edward.dinosaur.ai.Neuron;
-import br.com.edward.dinosaur.config.Config;
+import br.com.edward.dinosaur.screen.GameState;
 
 import java.awt.*;
 
@@ -11,26 +11,26 @@ public class NeuralNetworkDisplay {
 
     private final int w;
     private final int h;
-    private final Config config;
+    private final GameState gameState;
 
-    public NeuralNetworkDisplay(final Config config) {
-        this.w = this.h = 25;
-        this.config = config;
+    public NeuralNetworkDisplay(final GameState gameState) {
+        this.w = this.h = 15;
+        this.gameState = gameState;
     }
 
     public void draw(final Graphics2D g2d, final NeuralNetwork neuralNetwork) {
         this.draw(g2d, neuralNetwork.getInputLayer(), 360, 25);
         this.draw(g2d, neuralNetwork.getHiddenLayer(), 210, 25);
-        this.draw(g2d, neuralNetwork.getOutputLayer(), 60, 125);
+        this.draw(g2d, neuralNetwork.getOutputLayer(), 100, 95);
 
         this.draw(g2d, neuralNetwork.getInputLayer(), 360, 25, neuralNetwork.getHiddenLayer(), 210, 25);
-        this.draw(g2d, neuralNetwork.getHiddenLayer(), 210, 25, neuralNetwork.getOutputLayer(), 60, 125);
+        this.draw(g2d, neuralNetwork.getHiddenLayer(), 210, 25, neuralNetwork.getOutputLayer(), 100, 95);
     }
 
     private void draw(final Graphics2D g2d, final Layer l, final int x, final int y) {
         int i = 0;
         for (final var n : l.getNeurons()) {
-            this.draw(g2d, n, x, (y + (50 * ++i)));
+            this.draw(g2d, n, x, (y + (25 * ++i)));
         }
     }
 
@@ -44,10 +44,10 @@ public class NeuralNetworkDisplay {
 
                 g2d.setColor((n1.isActive() && n2.isActive()) ? Color.GREEN : Color.BLUE);
                 g2d.drawLine(
-                        ((this.config.getWidth() - x1) + this.w),
-                        ((y1 + (50 * i1)) + (this.h / 2)),
-                        (this.config.getWidth() - x2),
-                        ((y2 + (50 * ++i2)) + (this.h / 2))
+                        ((this.gameState.getWidth() - x1) + this.w),
+                        ((y1 + (25 * i1)) + (this.h / 2)),
+                        (this.gameState.getWidth() - x2),
+                        ((y2 + (25 * ++i2)) + (this.h / 2))
                 );
             }
         }
@@ -56,10 +56,10 @@ public class NeuralNetworkDisplay {
     public void draw(final Graphics2D g2d, final Neuron neuron, final int x, final int y) {
         if (neuron.isActive()) {
             g2d.setColor(Color.GREEN);
-            g2d.fillOval(this.config.getWidth() - x, y, this.w, this.h);
+            g2d.fillOval(this.gameState.getWidth() - x, y, this.w, this.h);
         } else {
             g2d.setColor(Color.BLUE);
-            g2d.drawOval(this.config.getWidth() - x, y, this.w, this.h);
+            g2d.drawOval(this.gameState.getWidth() - x, y, this.w, this.h);
         }
     }
 }

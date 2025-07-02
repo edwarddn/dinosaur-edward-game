@@ -1,32 +1,32 @@
 package br.com.edward.dinosaur.entity;
 
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Sprite;
+import br.com.edward.dinosaur.screen.GameState;
 
 public class MenuButton extends BaseEntity {
 
-    public MenuButton(final Config config, final int framePosition) {
-        super(config, EnumTypeOfEntity.BUTTON);
+    public MenuButton(final GameState gameState, final int framePosition) {
+        super(gameState, EnumTypeOfEntity.BUTTON);
         super.framePosition = framePosition;
     }
 
     @Override
     protected Sprite getSprite() {
-        return super.getConfig().getMenuButtonsSprite();
+        return super.getAssetManager().getMenuButtonsSprite();
     }
 
     @Override
     public double getPositionX() {
-        return ((super.getConfig().getWidth() / 2.0) - (this.getSprite().getFrame(this.getFramePosition()).width() / 2.0));
+        return ((super.getGameState().getWidth() / 2.0) - (this.getSprite().getFrame(this.getFramePosition()).width() / 2.0));
     }
 
     @Override
     public double getPositionY() {
         if (this.framePosition > 0) {
-            return ((super.getConfig().getHeight() / 2.0) - ((this.getHeightPosition() - 100.0) / 2.0));
+            return ((super.getGameState().getHeight() / 2.0) - ((this.getHeightPosition() - 100.0) / 2.0));
         }
-        return ((super.getConfig().getHeight() / 2.0) - ((this.getHeightPosition() + 100.0) / 2.0));
+        return ((super.getGameState().getHeight() / 2.0) - ((this.getHeightPosition() + 100.0) / 2.0));
     }
 
     private double getHeightPosition() {

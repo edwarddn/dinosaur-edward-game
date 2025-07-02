@@ -1,15 +1,15 @@
 package br.com.edward.dinosaur.screen;
 
 import br.com.edward.dinosaur.ai.NeuralNetwork;
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.entity.*;
 import br.com.edward.dinosaur.enuns.EnumGameStatus;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import lombok.Getter;
 
 import java.awt.*;
-import java.util.List;
 import java.util.*;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Stream;
 
 @Getter
@@ -21,26 +21,26 @@ public class ScreenManager {
     private final List<Dinosaur> deadDinosaurs;
     private final Dinosaur player;
     private final NeuralNetworkDisplay neuralNetworkDisplay;
-    private final Config config;
+    private final GameState gameState;
 
-    public ScreenManager(final Config config, final Dinosaur player) {
+    public ScreenManager(final GameState gameState, final Dinosaur player) {
         this.random = new SplittableRandom();
-        this.objects = new ArrayList<>();
-        this.dinosaurs = new ArrayList<>();
-        this.deadDinosaurs = new ArrayList<>();
-        this.config = config;
+        this.objects = new CopyOnWriteArrayList<>();
+        this.dinosaurs = new CopyOnWriteArrayList<>();
+        this.deadDinosaurs = new CopyOnWriteArrayList<>();
+        this.gameState = gameState;
         this.player = player;
-        this.neuralNetworkDisplay = new NeuralNetworkDisplay(config);
+        this.neuralNetworkDisplay = new NeuralNetworkDisplay(gameState);
         this.reset();
     }
 
     public void update(final double deltaTime) {
-        if (config.isTraining() && !this.player.isDeath()) {
+        if (gameState.isTraining() && !this.player.isDeath()) {
             this.player.dead();
         }
 
         for (final var item : objects) {
-            if (!EnumGameStatus.PLAYING.equals(this.config.getGameState())) {
+            if (!EnumGameStatus.PLAYING.equals(this.gameState.getGameStatus())) {
                 if (EnumTypeOfEntity.STAR.equals(item.getType())
                         || EnumTypeOfEntity.MOON.equals(item.getType())
                         || EnumTypeOfEntity.CLOUD.equals(item.getType())) {
@@ -60,28 +60,31 @@ public class ScreenManager {
         }
         this.objects.removeAll(objs);
 
-        final var outOfScreenDinosaurs = this.dinosaurs.stream().filter(BaseEntity::isOutOfScreen).toList();
-        if (!outOfScreenDinosaurs.isEmpty()) {
-            this.dinosaurs.removeAll(outOfScreenDinosaurs);
-            this.deadDinosaurs.addAll(outOfScreenDinosaurs);
-        }
+        this.dinosaurs.stream()
+                .filter(BaseEntity::isOutOfScreen)
+                .forEach(dino -> {
+                    this.dinosaurs.remove(dino);
+                    this.deadDinosaurs.add(dino);
+                });
 
-        if (EnumGameStatus.PLAYING.equals(this.config.getGameState())) {
-            this.config.accelerate(deltaTime);
 
-            final var enemy = objects.stream().filter(BaseEntity::isEnemy).findFirst();
-            if (enemy.isPresent()) {
-                final var enemyEntity = enemy.get();
-                this.dinosaurs.forEach(x -> x.think(enemyEntity));
-                this.player.think(enemyEntity);
-            }
+        if (EnumGameStatus.PLAYING.equals(this.gameState.getGameStatus())) {
+            this.gameState.accelerate(deltaTime);
+            objects.stream()
+                    .filter(BaseEntity::isEnemy)
+                    .findFirst()
+                    .ifPresent(enemyEntity -> {
+                        this.dinosaurs.forEach(dino -> dino.think(enemyEntity));
+                        this.player.think(enemyEntity);
+                    });
         }
     }
 
-    public synchronized void draw(final Graphics2D g2d) {
+    public void draw(final Graphics2D g2d) {
         for (final var item : this.objects) {
             item.draw(g2d);
         }
+
         int i = 0;
         for (final var item : this.dinosaurs) {
             item.declareAsNormal();
@@ -90,14 +93,16 @@ public class ScreenManager {
                 break;
             }
         }
+
         final var betterDinosaur = this.getBetterDinosaur();
-        if (this.config.isShowStatistics() && betterDinosaur.isPresent()) {
+        if (this.gameState.getConfig().isShowStatistics() && betterDinosaur.isPresent() && betterDinosaur.get().getNeuralNetwork() != null) {
             this.neuralNetworkDisplay.draw(g2d, betterDinosaur.get().getNeuralNetwork());
         }
-        if (betterDinosaur.isPresent()) {
-            betterDinosaur.get().declareAsBetter();
-            betterDinosaur.get().draw(g2d);
-        }
+
+        betterDinosaur.ifPresent(dino -> {
+            dino.declareAsBetter();
+            dino.draw(g2d);
+        });
     }
 
     public synchronized void reset() {
@@ -126,84 +131,84 @@ public class ScreenManager {
 
     private void createDinosaurs() {
         final var neuralNetwork = NeuralNetwork.get();
-        if (this.config.isTraining()) {
-            final var tenPercent = (int) (this.config.getPopulationSize() * 0.10);
-            final var ninetyPercent = this.config.getPopulationSize() - tenPercent;
+        if (this.gameState.isTraining()) {
+            final var tenPercent = (int) (this.gameState.getConfig().getPopulationSize() * 0.10);
+            final var ninetyPercent = this.gameState.getConfig().getPopulationSize() - tenPercent;
 
-            neuralNetwork.ifPresent(network -> this.dinosaurs.add(new Dinosaur(this.config, false, network)));
+            neuralNetwork.ifPresent(network -> this.dinosaurs.add(new Dinosaur(this.gameState, false, network)));
             for (int i = 0; i < ninetyPercent; i++) {
                 if (neuralNetwork.isPresent()) {
-                    this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork(neuralNetwork.get())));
+                    this.dinosaurs.add(new Dinosaur(this.gameState, false, new NeuralNetwork(neuralNetwork.get())));
                 } else {
-                    this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork()));
+                    this.dinosaurs.add(new Dinosaur(this.gameState, false, new NeuralNetwork()));
                 }
             }
             for (int i = 0; i < tenPercent; i++) {
-                this.dinosaurs.add(new Dinosaur(this.config, false, new NeuralNetwork()));
+                this.dinosaurs.add(new Dinosaur(this.gameState, false, new NeuralNetwork()));
             }
         } else {
-            this.dinosaurs.add(new Dinosaur(this.config, false, neuralNetwork.orElse(new NeuralNetwork())));
+            this.dinosaurs.add(new Dinosaur(this.gameState, false, neuralNetwork.orElse(new NeuralNetwork())));
         }
     }
 
     private void createMoon() {
-        this.objects.add(new Moon(this.config));
+        this.objects.add(new Moon(this.gameState));
     }
 
     private void createStars(final boolean beginning) {
         final var qtd = beginning ? this.random.nextInt(4, 10) : 1;
         for (double i = 0; i < qtd; i++) {
-            this.objects.add(new Star(beginning, config));
+            this.objects.add(new Star(beginning, gameState));
         }
     }
 
     private void createClouds(final boolean beginning) {
         final var qtd = beginning ? this.random.nextInt(4, 10) : 1;
         for (double i = 0; i < qtd; i++) {
-            this.objects.add(new Cloud(beginning, config));
+            this.objects.add(new Cloud(beginning, gameState));
         }
     }
 
     private void createGrounds() {
-        final var width = config.getWidth() <= config.getEnemyDistance() ? config.getEnemyDistance() * 5 : config.getWidth() * 5;
+        final var width = gameState.getWidth() <= gameState.getConfig().getEnemyDistance() ? gameState.getConfig().getEnemyDistance() * 5 : gameState.getWidth() * 5;
         double groundWidth = getGroundWidth();
         while (width >= groundWidth) {
-            final var ground = new Ground(config, groundWidth);
+            final var ground = new Ground(gameState, groundWidth);
             this.objects.add(ground);
             groundWidth += ground.getWidth();
         }
     }
 
     private double getGroundWidth() {
-        final var grounds = objects.stream().filter(BaseEntity::isGround).toList();
-        if (grounds.isEmpty()) {
-            return 0;
-        }
-        final var lastGround = grounds.get(grounds.size() - 1);
-        return lastGround.getPositionX() + lastGround.getWidth();
+        return objects.stream()
+                .filter(BaseEntity::isGround)
+                .max(Comparator.comparingDouble(BaseEntity::getPositionX))
+                .map(lastGround -> lastGround.getPositionX() + lastGround.getWidth())
+                .orElse(0.0);
     }
 
     private void createEnemy() {
-        final var width = config.getWidth() <= config.getEnemyDistance() ? config.getEnemyDistance() * 4 : config.getWidth() * 4;
-        final var enemies = objects.stream().filter(BaseEntity::isEnemy).toList();
-        double enemyWidth = this.getEnemyWidth(enemies);
+        final var width = gameState.getWidth() <= gameState.getConfig().getEnemyDistance() ? gameState.getConfig().getEnemyDistance() * 4 : gameState.getWidth() * 4;
+        double enemyWidth = this.getEnemyWidth();
         while (width >= enemyWidth) {
-            final var enemy = this.random.nextInt(2) == 0 ? new Bird(config, enemyWidth) : new Cactus(config, enemyWidth);
+            final var enemy = this.random.nextInt(2) == 0 ? new Bird(gameState, enemyWidth) : new Cactus(gameState, enemyWidth);
             this.objects.add(enemy);
-            enemyWidth += enemy.getWidth() + config.getEnemyDistance();
+            enemyWidth += enemy.getWidth() + gameState.getConfig().getEnemyDistance();
         }
     }
 
-    private double getEnemyWidth(final List<BaseEntity> enemies) {
-        if (enemies.isEmpty()) {
-            return config.getWidth() + (double) config.getEnemyDistance();
-        }
-        final var lastEnemy = enemies.get(enemies.size() - 1);
-        return lastEnemy.getPositionX() + lastEnemy.getWidth() + this.random.nextInt(config.getEnemyDistance(), config.getEnemyDistance() * 2);
+    private double getEnemyWidth() {
+        return objects.stream()
+                .filter(BaseEntity::isEnemy)
+                .max(Comparator.comparingDouble(BaseEntity::getPositionX))
+                .map(lastEnemy -> lastEnemy.getPositionX() + lastEnemy.getWidth() + this.random.nextInt(gameState.getConfig().getEnemyDistance(), gameState.getConfig().getEnemyDistance() * 2))
+                .orElse((double) (gameState.getWidth() + gameState.getConfig().getEnemyDistance()));
     }
 
     public Optional<Dinosaur> getBetterDinosaur() {
         return Stream.concat(this.dinosaurs.stream(), this.deadDinosaurs.stream())
-                .max(Comparator.comparing(Dinosaur::getScore));
+                .filter(Objects::nonNull)
+                .max(Comparator.comparingLong(Dinosaur::getScore)
+                        .thenComparing(Dinosaur::getMovementCount, Comparator.reverseOrder()));
     }
 }

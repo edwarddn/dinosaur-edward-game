@@ -1,5 +1,6 @@
 package br.com.edward.dinosaur.ai;
 
+import br.com.edward.dinosaur.enuns.EnumTypeFunction;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -13,11 +14,13 @@ public class Neuron implements Serializable {
 
     private final double[] weights;
     private final double bias;
+    private final EnumTypeFunction enumTypeFunction;
     private transient boolean active;
 
-    public Neuron(final SplittableRandom random, final int size) {
+    public Neuron(final SplittableRandom random, final int size, final EnumTypeFunction typeFunction) {
         this.weights = random.doubles(size, -WEIGHT_RANGE, WEIGHT_RANGE).toArray();
         this.bias = random.nextDouble(-WEIGHT_RANGE, WEIGHT_RANGE);
+        this.enumTypeFunction = typeFunction;
     }
 
     public Neuron(final SplittableRandom random, final Neuron neuron) {
@@ -29,6 +32,7 @@ public class Neuron implements Serializable {
 
         final var biasPerturbation = (random.nextDouble() * 2 - 1) * MUTATION_SCALE;
         this.bias = Math.max(-WEIGHT_RANGE, Math.min(WEIGHT_RANGE, neuron.bias + biasPerturbation));
+        this.enumTypeFunction = neuron.getEnumTypeFunction();
     }
 
     public double getOutput(final double[] inputs) {
@@ -37,8 +41,11 @@ public class Neuron implements Serializable {
             sum += inputs[i] * weights[i];
         }
 
-        // Applying the ReLU activation function
-        final var output = Math.max(0, sum);
+        double output = switch (this.enumTypeFunction) {
+            case SIGMOID -> 1 / (1 + Math.exp(-sum));
+            default -> Math.max(0, sum);
+        };
+
         this.active = output > 0.0;
         return output;
     }

@@ -1,18 +1,18 @@
 package br.com.edward.dinosaur.entity;
 
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Sprite;
+import br.com.edward.dinosaur.screen.GameState;
 
 import java.awt.*;
 
 public class Cactus extends BaseEntity {
 
-    public Cactus(final Config config, final double positionX) {
-        super(config, EnumTypeOfEntity.ENEMY);
+    public Cactus(final GameState gameState, final double positionX) {
+        super(gameState, EnumTypeOfEntity.ENEMY);
         this.referencePositionX = positionX;
         this.referencePositionY = (this.getRandomFrame().height() > 70) ? 175 : 150;
-        this.speedX = super.getConfig().getSpeed();
+        this.speedX = gameState.getCurrentSpeed();
     }
 
     @Override
@@ -28,7 +28,7 @@ public class Cactus extends BaseEntity {
 
     @Override
     protected Sprite getSprite() {
-        return super.getConfig().getCactusSprite();
+        return super.getAssetManager().getCactusSprite();
     }
 
     @Override
@@ -38,6 +38,6 @@ public class Cactus extends BaseEntity {
 
     @Override
     public double getPositionY() {
-        return super.getConfig().getHeight() - this.referencePositionY;
+        return super.getGameState().getHeight() - this.referencePositionY;
     }
 }

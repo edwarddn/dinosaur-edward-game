@@ -2,17 +2,17 @@
 
 ![Dinosaur Edward Game](game-screenshot.gif)
 
-Dinosaur Edward Game is a game based on the popular Chrome dinosaur game (T-rex), developed in Java 21, using only Java without any auxiliary libraries.
-The game is created with the help of Spring Boot to start the system and Lombok to make the code less verbose.
-Additionally, the game features an artificial intelligence that uses natural selection in a genetic algorithm, allowing you to choose between playing against the network or training it.
+Dinosaur Edward Game is a game based on the popular Chrome dinosaur game, developed in Java 24. 
+The game's core logic, including physics and rendering, was built from scratch without relying on external game engines. 
+To streamline the development process, the project is assisted by modern tools like Spring Boot for simplified builds and packaging, and Lombok for code conciseness.
 
 ## Download the Game
 
 To try out the game, download the version compatible with your operating system:
 
-- [Download for macOS (AArch64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v1.3.0/dinosaur-edward-game-1.3.0.dmg)
-- [Download for Linux (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v1.3.0/dinosaur-edward-game-1.3.0.deb)
-- [Download for Windows (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v1.3.0/dinosaur-edward-game-1.3.0.exe)
+- [Download for macOS (AArch64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v2.0.0/dinosaur-edward-game-2.0.0.dmg)
+- [Download for Linux (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v2.0.0/dinosaur-edward-game-2.0.0.deb)
+- [Download for Windows (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v2.0.0/dinosaur-edward-game-2.0.0.exe)
 
 After downloading, simply run the downloaded file on your operating system to install the game.
 
@@ -21,10 +21,9 @@ Enjoy the game and have fun!
 ## Main Features
 
 - The game is inspired by the Chrome dinosaur game (T-rex).
-- Developed in Java 21, using only Java without any auxiliary libraries.
-- Uses Spring Boot to start the system.
-- Uses Lombok to make the code less verbose.
-- The game features an artificial intelligence based on a neural network trained by a genetic algorithm.
+- The core gameplay and rendering engine were built from scratch in Java 24.
+- Features an artificial intelligence based on a neural network trained by a genetic algorithm.
+- Uses Spring Boot and Lombok to streamline development and builds.
 
 ## How to Play
 
@@ -48,11 +47,11 @@ Enjoy the game and have fun!
 
 ## System Requirements
 
-- Java Development Kit (JDK) 21
+- Java Development Kit (JDK) 24
 
 ## How to Run the Game
 
-1. Make sure you have Java 21 installed on your system.
+1. Make sure you have Java 24 installed on your system.
 2. Clone this repository to your development environment.
 3. Navigate to the root directory of the project.
 4. Run the following commands in the terminal to compile and execute the game:

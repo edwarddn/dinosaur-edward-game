@@ -1,22 +1,22 @@
 package br.com.edward.dinosaur.entity;
 
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Sprite;
+import br.com.edward.dinosaur.screen.GameState;
 
 public class Ground extends BaseEntity {
 
-    public Ground(final Config config, final double width) {
-        super(config, EnumTypeOfEntity.GROUND);
+    public Ground(final GameState gameState, final double width) {
+        super(gameState, EnumTypeOfEntity.GROUND);
         this.referencePositionX = width;
         this.referencePositionY = 100;
-        this.speedX = super.getConfig().getSpeed();
+        this.speedX = gameState.getCurrentSpeed();
         this.getRandomFrame();
     }
 
     @Override
     protected Sprite getSprite() {
-        return super.getConfig().getGroundsSprite();
+        return super.getAssetManager().getGroundsSprite();
     }
 
     @Override
@@ -26,6 +26,6 @@ public class Ground extends BaseEntity {
 
     @Override
     public double getPositionY() {
-        return getConfig().getHeight() - this.referencePositionY;
+        return getGameState().getHeight() - this.referencePositionY;
     }
 }

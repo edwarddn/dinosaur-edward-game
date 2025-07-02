@@ -1,6 +1,7 @@
 package br.com.edward.dinosaur.screen;
 
 import br.com.edward.dinosaur.config.Config;
+import br.com.edward.dinosaur.resource.AssetManager;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,8 +16,8 @@ class GameWindowTests {
         final var config = Config.builder()
                 .title("Test")
                 .resizable(true)
-                .width(100)
-                .height(100)
+                .initialWidth(100)
+                .initialHeight(100)
                 .gameSpeed(60)
                 .fps(120)
                 .minSpeed(18)
@@ -31,6 +32,8 @@ class GameWindowTests {
                 .collision(true)
                 .build();
 
-        assertThatCode(() -> new GameWindow(config).startGame()).doesNotThrowAnyException();
+        AssetManager.getInstance().loadAssets();
+
+        assertThatCode(() -> new GameWindow(config, AssetManager.getInstance()).startGame()).doesNotThrowAnyException();
     }
 }

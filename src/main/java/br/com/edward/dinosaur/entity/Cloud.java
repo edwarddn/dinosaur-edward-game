@@ -1,21 +1,21 @@
 package br.com.edward.dinosaur.entity;
 
-import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Sprite;
+import br.com.edward.dinosaur.screen.GameState;
 
 public class Cloud extends BaseEntity {
 
-    public Cloud(final boolean beginning, final Config config) {
-        super(config, EnumTypeOfEntity.CLOUD);
-        this.referencePositionX = beginning ? getRandom().nextInt(0, config.getWidth()) : getRandom().nextInt(config.getWidth(), config.getWidth() * 2);
+    public Cloud(final boolean beginning, final GameState gameState) {
+        super(gameState, EnumTypeOfEntity.CLOUD);
+        this.referencePositionX = beginning ? getRandom().nextInt(0, gameState.getWidth()) : getRandom().nextInt(gameState.getWidth(), gameState.getWidth() * 2);
         this.referencePositionY = super.getRandom().nextInt(3, 51);
-        this.speedX = super.getConfig().getSpeed() / super.getRandom().nextInt(8, 40);
+        this.speedX = gameState.getCurrentSpeed() / super.getRandom().nextInt(8, 40);
     }
 
     @Override
     protected Sprite getSprite() {
-        return super.getConfig().getCloudsSprite();
+        return super.getAssetManager().getCloudsSprite();
     }
 
     @Override
@@ -25,6 +25,6 @@ public class Cloud extends BaseEntity {
 
     @Override
     public double getPositionY() {
-        return (this.referencePositionY / 100F) * super.getConfig().getHeight();
+        return (this.referencePositionY / 100F) * super.getGameState().getHeight();
     }
 }
