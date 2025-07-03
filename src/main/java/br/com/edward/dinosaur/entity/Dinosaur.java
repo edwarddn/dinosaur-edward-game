@@ -201,30 +201,7 @@ public class Dinosaur extends BaseEntity {
 
         if (Objects.nonNull(this.neuralNetwork)) {
 
-            final double maxGameSpeed = getConfig().getMaxSpeed();
-            final double maxGameHeight = getGameState().getHeight();
-            final double maxGameWidth = getGameState().getWidth();
-
-            double normalizedDistance = (distance > 0) ? (distance / maxGameWidth) : 0.0;
-            double normalizedEnemyY = enemy.getReferencePositionY() / maxGameHeight;
-            double normalizedEnemyWidth = enemy.getBound().getWidth() / 150.0;
-            double normalizedEnemyHeight = enemy.getBound().getHeight() / 100.0;
-            double normalizedDinoY = this.getReferencePositionY() / maxGameHeight;
-            double normalizedSpeed = getGameState().getCurrentSpeed() / maxGameSpeed;
-            double isCactus = (enemy instanceof Cactus) ? 1.0 : 0.0;
-            double isBird = (enemy instanceof Bird) ? 1.0 : 0.0;
-            final double[] inputs = new double[]{
-                    Math.max(0, Math.min(1, normalizedDistance)),
-                    Math.max(0, Math.min(1, normalizedEnemyY)),
-                    Math.max(0, Math.min(1, normalizedEnemyWidth)),
-                    Math.max(0, Math.min(1, normalizedEnemyHeight)),
-                    Math.max(0, Math.min(1, normalizedDinoY)),
-                    Math.max(0, Math.min(1, normalizedSpeed)),
-                    isCactus,
-                    isBird
-            };
-
-            final var output = this.neuralNetwork.getOutput(inputs);
+            final var output = this.neuralNetwork.getOutput(getInputs(enemy, distance));
 
             if (output[0] > 0.5 && output[1] <= 0.5) {
                 this.jump();
@@ -234,6 +211,29 @@ public class Dinosaur extends BaseEntity {
                 this.down(false);
             }
         }
+    }
+
+    private double[] getInputs(final BaseEntity enemy, final double distance) {
+
+        final double normalizedDistance = (distance > 0) ? (distance / getGameState().getConfig().getEnemyDistance()) : 0.0;
+        final double normalizedEnemyY = enemy.getReferencePositionY() / 350.0;
+        final double normalizedEnemyWidth = enemy.getBound().getWidth() / 150.0;
+        final double normalizedEnemyHeight = enemy.getBound().getHeight() / 100.0;
+        final double normalizedDinoY = this.getReferencePositionY() / 350.0;
+        final double normalizedSpeed = getGameState().getCurrentSpeed() / getConfig().getMaxSpeed();
+        final double isCactus = (enemy instanceof Cactus) ? 1.0 : 0.0;
+        final double isBird = (enemy instanceof Bird) ? 1.0 : 0.0;
+
+        return new double[]{
+                Math.max(0, Math.min(1, normalizedDistance)),
+                Math.max(0, Math.min(1, normalizedEnemyY)),
+                Math.max(0, Math.min(1, normalizedEnemyWidth)),
+                Math.max(0, Math.min(1, normalizedEnemyHeight)),
+                Math.max(0, Math.min(1, normalizedDinoY)),
+                Math.max(0, Math.min(1, normalizedSpeed)),
+                isCactus,
+                isBird
+        };
     }
 
     @Override
