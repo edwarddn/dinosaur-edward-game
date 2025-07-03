@@ -229,7 +229,7 @@ public class GameScreen extends JPanel implements Runnable {
         switch (this.gameState.getGameStatus()) {
             case PLAYING -> {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {
-                    actionQueue.add(() -> player.jump());
+                    actionQueue.add(player::jump);
                 } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                     actionQueue.add(() -> player.down(true));
                 } else if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
