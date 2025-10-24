@@ -144,7 +144,7 @@ public class Dinosaur extends BaseEntity {
     }
 
     public void down(final boolean isDown) {
-        if (EnumDinosaurActions.JUMPING.equals(this.state)) {
+        if (isDown && EnumDinosaurActions.JUMPING.equals(this.state)) {
             this.jumpSpeed -= 10;
         }
         if (isDown && !EnumDinosaurActions.CROUCHING.equals(this.state)) {
