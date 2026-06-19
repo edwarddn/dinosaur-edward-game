@@ -1,0 +1,91 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            profile: linux
+            ext: deb
+          - os: windows-latest
+            profile: windows
+            ext: exe
+          - os: macos-latest
+            profile: macos
+            ext: dmg
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: liberica
+          java-version: '25'
+          cache: maven
+
+      # jpackage needs fakeroot to assemble the .deb
+      - name: Install fakeroot
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y fakeroot
+
+      # jpackage needs the WiX Toolset to produce the .exe
+      - name: Install WiX Toolset
+        if: runner.os == 'Windows'
+        run: choco install wixtoolset --no-progress -y
+
+      - name: Build installer
+        shell: bash
+        run: |
+          chmod +x ./mvnw
+          ./mvnw -B clean install -P ${{ matrix.profile }}
+
+      # jpackage names files per platform (e.g. "Dinosaur Edward Game-3.0.0.exe",
+      # "dinosaur-edward-game_3.0.0_amd64.deb"); normalize to the README convention.
+      - name: Stage installer with the release file name
+        shell: bash
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          version="${REF_NAME#v}"
+          mkdir -p dist
+          shopt -s nullglob
+          for file in target/output/*.${{ matrix.ext }}; do
+            cp "$file" "dist/dinosaur-edward-game-${version}.${{ matrix.ext }}"
+          done
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dinosaur-${{ matrix.profile }}
+          path: dist/*.${{ matrix.ext }}
+          if-no-files-found: error
+
+  release:
+    needs: package
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all installers
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create release and attach installers
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
