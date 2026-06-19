@@ -27,6 +27,7 @@ public class ScreenManager {
     private final Dinosaur player;
     private final NeuralNetworkDisplay neuralNetworkDisplay;
     private final GameState gameState;
+    private boolean trainedGeneration;
 
     public ScreenManager(final GameState gameState, final Dinosaur player) {
         this.random = new SplittableRandom();
@@ -107,7 +108,7 @@ public class ScreenManager {
     }
 
     public synchronized void reset() {
-        final var parents = this.selectParents();
+        final var parents = this.trainedGeneration ? this.selectParents() : new ArrayList<NeuralNetwork>();
         this.objects.clear();
         this.dinosaurs.clear();
         this.deadDinosaurs.clear();
@@ -115,6 +116,7 @@ public class ScreenManager {
             this.createGameEntity(true, type);
         }
         this.createDinosaurs(parents);
+        this.trainedGeneration = this.gameState.isTraining();
     }
 
     private void createGameEntity(final boolean beginning, final EnumTypeOfEntity type) {
