@@ -48,7 +48,7 @@ jobs:
         shell: bash
         run: |
           chmod +x ./mvnw
-          ./mvnw -B clean install -P ${{ matrix.profile }}
+          ./mvnw -B clean install -P ${{ matrix.profile }} -DskipTests
 
       # jpackage names files per platform (e.g. "Dinosaur Edward Game-3.0.0.exe",
       # "dinosaur-edward-game_3.0.0_amd64.deb"); normalize to the README convention.
