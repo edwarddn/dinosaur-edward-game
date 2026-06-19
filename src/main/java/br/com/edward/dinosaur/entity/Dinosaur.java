@@ -1,9 +1,9 @@
 package br.com.edward.dinosaur.entity;
 
 import br.com.edward.dinosaur.ai.NeuralNetwork;
-import br.com.edward.dinosaur.enuns.EnumDinosaurActions;
-import br.com.edward.dinosaur.enuns.EnumGameStatus;
-import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
+import br.com.edward.dinosaur.enums.EnumDinosaurActions;
+import br.com.edward.dinosaur.enums.EnumGameStatus;
+import br.com.edward.dinosaur.enums.EnumTypeOfEntity;
 import br.com.edward.dinosaur.helper.ResourceUtil;
 import br.com.edward.dinosaur.record.Sprite;
 import br.com.edward.dinosaur.screen.GameState;
@@ -181,7 +181,7 @@ public class Dinosaur extends BaseEntity {
             this.score++;
         }
 
-        if (this.score <= 0.0 || (super.getConfig().isCollision() && intersect)) {
+        if (super.getConfig().isCollision() && intersect) {
             this.playDeadSound();
             this.dead();
             return;
@@ -221,18 +221,16 @@ public class Dinosaur extends BaseEntity {
         final double normalizedEnemyHeight = enemy.getBound().getHeight() / 100.0;
         final double normalizedDinoY = this.getReferencePositionY() / 350.0;
         final double normalizedSpeed = getGameState().getCurrentSpeed() / getConfig().getMaxSpeed();
-        final double isCactus = (enemy instanceof Cactus) ? 1.0 : 0.0;
-        final double isBird = (enemy instanceof Bird) ? 1.0 : 0.0;
+        final double enemyType = (enemy instanceof Bird) ? 1.0 : 0.0;
 
         return new double[]{
-                Math.max(0, Math.min(1, normalizedDistance)),
-                Math.max(0, Math.min(1, normalizedEnemyY)),
-                Math.max(0, Math.min(1, normalizedEnemyWidth)),
-                Math.max(0, Math.min(1, normalizedEnemyHeight)),
-                Math.max(0, Math.min(1, normalizedDinoY)),
-                Math.max(0, Math.min(1, normalizedSpeed)),
-                isCactus,
-                isBird
+                Math.clamp(normalizedDistance, 0.0, 1.0),
+                Math.clamp(normalizedEnemyY, 0.0, 1.0),
+                Math.clamp(normalizedEnemyWidth, 0.0, 1.0),
+                Math.clamp(normalizedEnemyHeight, 0.0, 1.0),
+                Math.clamp(normalizedDinoY, 0.0, 1.0),
+                Math.clamp(normalizedSpeed, 0.0, 1.0),
+                enemyType
         };
     }
 

@@ -1,7 +1,7 @@
 package br.com.edward.dinosaur.entity;
 
 import br.com.edward.dinosaur.config.Config;
-import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
+import br.com.edward.dinosaur.enums.EnumTypeOfEntity;
 import br.com.edward.dinosaur.record.Frame;
 import br.com.edward.dinosaur.record.Sprite;
 import br.com.edward.dinosaur.resource.AssetManager;

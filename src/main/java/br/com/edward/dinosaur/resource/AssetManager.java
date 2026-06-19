@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import javax.sound.sampled.Clip;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -56,7 +57,7 @@ public class AssetManager {
         this.menuButtonsSprite = this.createMenuButtonsSprite();
         this.gameOverSprite = this.createGameOverSprite();
 
-        final var dinoImage = ResourceUtil.getResourceImage("img/dinosaurs.png");
+        final var dinoImage = Objects.requireNonNull(ResourceUtil.getResourceImage("img/dinosaurs.png"));
         this.dinosaurStandingSprite = this.createDinoStandingSprite(dinoImage);
         this.dinosaurRunSprite = this.createDinoRunSprite(dinoImage);
         this.dinosaurJumpSprite = this.createDinoJumpSprite(dinoImage);
@@ -168,8 +169,7 @@ public class AssetManager {
 
     private Sprite createReplayButtonsSprite() {
         final var image = ResourceUtil.getResourceImage("img/replay-buttons.png");
-        final var sprite = new Sprite(image, 72, 64, 0, 0);
-        return sprite;
+        return new Sprite(image, 72, 64, 0, 0);
     }
 
     private Sprite createMenuButtonsSprite() {

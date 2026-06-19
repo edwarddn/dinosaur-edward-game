@@ -3,6 +3,7 @@ package br.com.edward.dinosaur;
 import br.com.edward.dinosaur.config.Config;
 import br.com.edward.dinosaur.resource.AssetManager;
 import br.com.edward.dinosaur.screen.GameWindow;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
@@ -12,14 +13,14 @@ import javax.swing.*;
 @SpringBootApplication
 public class DinosaurApplication implements CommandLineRunner {
 
-    public static void main(final String[] args) {
+    static void main(final String[] args) {
         final var application = new SpringApplicationBuilder(DinosaurApplication.class);
         application.headless(false); // Configures the application to run with a graphical user interface
         application.run(args);
     }
 
     @Override
-    public void run(final String... args) {
+    public void run(final String @NonNull ... args) {
         SwingUtilities.invokeLater(() -> {
 
             final var config = Config.builder()

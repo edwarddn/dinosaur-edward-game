@@ -1,9 +1,10 @@
 package br.com.edward.dinosaur.screen;
 
+import br.com.edward.dinosaur.ai.Breeder;
 import br.com.edward.dinosaur.ai.NeuralNetwork;
 import br.com.edward.dinosaur.entity.*;
-import br.com.edward.dinosaur.enuns.EnumGameStatus;
-import br.com.edward.dinosaur.enuns.EnumTypeOfEntity;
+import br.com.edward.dinosaur.enums.EnumGameStatus;
+import br.com.edward.dinosaur.enums.EnumTypeOfEntity;
 import lombok.Getter;
 
 import java.awt.*;
@@ -14,6 +15,10 @@ import java.util.stream.Stream;
 
 @Getter
 public class ScreenManager {
+
+    private static final Comparator<Dinosaur> FITNESS = Comparator
+            .comparingLong(Dinosaur::getScore)
+            .thenComparing(Dinosaur::getMovementCount, Comparator.reverseOrder());
 
     private final SplittableRandom random;
     private final List<BaseEntity> objects;
@@ -60,23 +65,19 @@ public class ScreenManager {
         }
         this.objects.removeAll(objs);
 
-        this.dinosaurs.stream()
-                .filter(BaseEntity::isOutOfScreen)
-                .forEach(dino -> {
-                    this.dinosaurs.remove(dino);
-                    this.deadDinosaurs.add(dino);
-                });
+        final var dinosaursOutOfScreen = this.dinosaurs.stream().filter(BaseEntity::isOutOfScreen).toList();
+        if (!dinosaursOutOfScreen.isEmpty()) {
+            this.dinosaurs.removeAll(dinosaursOutOfScreen);
+            this.deadDinosaurs.addAll(dinosaursOutOfScreen);
+        }
 
 
         if (EnumGameStatus.PLAYING.equals(this.gameState.getGameStatus())) {
             this.gameState.accelerate(deltaTime);
-            objects.stream()
-                    .filter(BaseEntity::isEnemy)
-                    .findFirst()
-                    .ifPresent(enemyEntity -> {
-                        this.dinosaurs.forEach(dino -> dino.think(enemyEntity));
-                        this.player.think(enemyEntity);
-                    });
+            this.findNextEnemy().ifPresent(enemy -> {
+                this.dinosaurs.forEach(dino -> dino.think(enemy));
+                this.player.think(enemy);
+            });
         }
     }
 
@@ -106,13 +107,14 @@ public class ScreenManager {
     }
 
     public synchronized void reset() {
+        final var parents = this.selectParents();
         this.objects.clear();
         this.dinosaurs.clear();
         this.deadDinosaurs.clear();
         for (EnumTypeOfEntity type : EnumTypeOfEntity.values()) {
             this.createGameEntity(true, type);
         }
-        this.createDinosaurs();
+        this.createDinosaurs(parents);
     }
 
     private void createGameEntity(final boolean beginning, final EnumTypeOfEntity type) {
@@ -129,26 +131,47 @@ public class ScreenManager {
         }
     }
 
-    private void createDinosaurs() {
-        final var neuralNetwork = NeuralNetwork.get();
-        if (this.gameState.isTraining()) {
-            final var tenPercent = (int) (this.gameState.getConfig().getPopulationSize() * 0.10);
-            final var ninetyPercent = this.gameState.getConfig().getPopulationSize() - tenPercent;
-
-            neuralNetwork.ifPresent(network -> this.dinosaurs.add(new Dinosaur(this.gameState, false, network)));
-            for (int i = 0; i < ninetyPercent; i++) {
-                if (neuralNetwork.isPresent()) {
-                    this.dinosaurs.add(new Dinosaur(this.gameState, false, new NeuralNetwork(neuralNetwork.get())));
-                } else {
-                    this.dinosaurs.add(new Dinosaur(this.gameState, false, new NeuralNetwork()));
-                }
-            }
-            for (int i = 0; i < tenPercent; i++) {
-                this.dinosaurs.add(new Dinosaur(this.gameState, false, new NeuralNetwork()));
-            }
-        } else {
-            this.dinosaurs.add(new Dinosaur(this.gameState, false, neuralNetwork.orElse(new NeuralNetwork())));
+    private void createDinosaurs(final List<NeuralNetwork> parents) {
+        if (!this.gameState.isTraining()) {
+            final var champion = NeuralNetwork.get()
+                    .or(() -> parents.stream().findFirst())
+                    .orElseGet(NeuralNetwork::new);
+            this.dinosaurs.add(new Dinosaur(this.gameState, false, champion));
+            return;
         }
+
+        final var pool = parents.isEmpty()
+                ? NeuralNetwork.get().map(List::of).orElseGet(List::of)
+                : parents;
+
+        final int populationSize = this.gameState.getConfig().getPopulationSize();
+        final var population = Breeder.breed(pool, populationSize, this.random).stream()
+                .map(network -> new Dinosaur(this.gameState, false, network))
+                .toList();
+        this.dinosaurs.addAll(population);
+    }
+
+    private List<NeuralNetwork> selectParents() {
+        final var parentCount = Math.max(2, (int) (this.gameState.getConfig().getPopulationSize() * 0.10));
+        return Stream.concat(this.dinosaurs.stream(), this.deadDinosaurs.stream())
+                .filter(Objects::nonNull)
+                .filter(dino -> dino.getNeuralNetwork() != null)
+                .sorted(FITNESS.reversed())
+                .limit(parentCount)
+                .map(Dinosaur::getNeuralNetwork)
+                .toList();
+    }
+
+    private Optional<BaseEntity> findNextEnemy() {
+        final double frontX = Stream.concat(this.dinosaurs.stream(), Stream.of(this.player))
+                .filter(dino -> !dino.isDeath())
+                .mapToDouble(Dinosaur::getPositionX)
+                .max()
+                .orElse(0.0);
+        return this.objects.stream()
+                .filter(BaseEntity::isEnemy)
+                .filter(enemy -> enemy.getPositionX() + enemy.getWidth() >= frontX)
+                .min(Comparator.comparingDouble(BaseEntity::getPositionX));
     }
 
     private void createMoon() {
@@ -208,7 +231,6 @@ public class ScreenManager {
     public Optional<Dinosaur> getBetterDinosaur() {
         return Stream.concat(this.dinosaurs.stream(), this.deadDinosaurs.stream())
                 .filter(Objects::nonNull)
-                .max(Comparator.comparingLong(Dinosaur::getScore)
-                        .thenComparing(Dinosaur::getMovementCount, Comparator.reverseOrder()));
+                .max(FITNESS);
     }
 }

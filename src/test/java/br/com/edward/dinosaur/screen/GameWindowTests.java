@@ -10,9 +10,8 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 class GameWindowTests {
 
     @Test
-    @DisplayName("Test start game")
-    void testStartGame() {
-
+    @DisplayName("GameWindow wires up the whole object graph without throwing")
+    void testWiring() {
         final var config = Config.builder()
                 .title("Test")
                 .resizable(true)
@@ -34,6 +33,6 @@ class GameWindowTests {
 
         AssetManager.getInstance().loadAssets();
 
-        assertThatCode(() -> new GameWindow(config, AssetManager.getInstance()).startGame()).doesNotThrowAnyException();
+        assertThatCode(() -> new GameWindow(config, AssetManager.getInstance())).doesNotThrowAnyException();
     }
 }

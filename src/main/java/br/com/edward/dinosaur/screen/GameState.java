@@ -1,7 +1,7 @@
 package br.com.edward.dinosaur.screen;
 
 import br.com.edward.dinosaur.config.Config;
-import br.com.edward.dinosaur.enuns.EnumGameStatus;
+import br.com.edward.dinosaur.enums.EnumGameStatus;
 import br.com.edward.dinosaur.resource.AssetManager;
 import lombok.Getter;
 

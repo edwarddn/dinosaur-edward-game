@@ -23,7 +23,7 @@ public record Sprite(BufferedImage image, List<Frame> frames) {
 
     public Frame getFrame(final int p) {
         if (p >= this.frames.size()) {
-            return this.frames.get(0);
+            return this.frames.getFirst();
         }
         return this.frames.get(p);
     }
