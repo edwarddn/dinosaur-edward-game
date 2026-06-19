@@ -18,7 +18,7 @@
     <description>Dinosaur Edward Game</description>
 
     <properties>
-        <revision>3.0.0</revision>
+        <revision>3.0.1</revision>
         <java.version>25</java.version>
 
         <!-- Tests -->
