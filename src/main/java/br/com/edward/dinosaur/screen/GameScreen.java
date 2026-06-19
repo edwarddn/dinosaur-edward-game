@@ -1,7 +1,7 @@
 package br.com.edward.dinosaur.screen;
 
 import br.com.edward.dinosaur.entity.*;
-import br.com.edward.dinosaur.enuns.EnumGameStatus;
+import br.com.edward.dinosaur.enums.EnumGameStatus;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.swing.*;
@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class GameScreen extends JPanel implements Runnable {
 
+    private static final int MAX_UPDATES_PER_FRAME = 5;
     private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("0.00");
 
     private final transient GameState gameState;
@@ -35,6 +36,7 @@ public class GameScreen extends JPanel implements Runnable {
 
     private transient BufferedImage bufferedImage;
     private volatile int currentFps;
+    private volatile boolean running;
 
     public GameScreen(final GameState gameState) {
         this.gameState = gameState;
@@ -51,6 +53,7 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     public void startGame() {
+        this.running = true;
         this.gameThread.start();
     }
 
@@ -129,35 +132,44 @@ public class GameScreen extends JPanel implements Runnable {
 
     @Override
     public void run() {
-        final long msPerFrame = (long) Math.floor(1000.0 / gameState.getConfig().getFps());
-        long previousTime = System.currentTimeMillis();
-        long fpsTimer = System.currentTimeMillis();
+        final double fixedDeltaMs = 1000.0 / gameState.getConfig().getFps();
+        final long fixedDeltaNanos = (long) (1_000_000_000.0 / gameState.getConfig().getFps());
+        final long maxAccumulatedNanos = fixedDeltaNanos * MAX_UPDATES_PER_FRAME;
+
+        long previousTime = System.nanoTime();
+        long fpsTimer = previousTime;
+        long accumulator = 0;
         int frameCount = 0;
 
-        while (Thread.currentThread() == this.gameThread) {
+        while (this.running) {
             try {
-                final var startTime = System.currentTimeMillis();
-                final var deltaTime = (startTime - previousTime);
-                previousTime = startTime;
+                final long now = System.nanoTime();
+                accumulator += Math.min(now - previousTime, maxAccumulatedNanos);
+                previousTime = now;
 
                 processActions();
-                gameUpdate(deltaTime);
+                while (accumulator >= fixedDeltaNanos) {
+                    gameUpdate(fixedDeltaMs);
+                    accumulator -= fixedDeltaNanos;
+                }
                 repaint();
 
                 frameCount++;
-                if (System.currentTimeMillis() - fpsTimer >= 1000) {
+                if (now - fpsTimer >= 1_000_000_000L) {
                     this.currentFps = frameCount;
                     frameCount = 0;
-                    fpsTimer = System.currentTimeMillis();
+                    fpsTimer = now;
                 }
 
-                final var waitTime = msPerFrame - (System.currentTimeMillis() - startTime);
-                if (waitTime > 0) {
-                    TimeUnit.MILLISECONDS.sleep(waitTime);
+                final long sleepNanos = fixedDeltaNanos - (System.nanoTime() - now);
+                if (sleepNanos > 0) {
+                    TimeUnit.NANOSECONDS.sleep(sleepNanos);
                 }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                this.running = false;
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                Thread.currentThread().interrupt();
             }
         }
     }
@@ -169,9 +181,10 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     private void saveNeuralNetwork() {
-        this.screenManager.getBetterDinosaur()
-                .filter(d -> this.gameState.isTraining())
-                .ifPresent(d -> d.getNeuralNetwork().save());
+        if (this.gameState.isTraining()) {
+            this.screenManager.getBetterDinosaur()
+                    .ifPresent(dinosaur -> dinosaur.getNeuralNetwork().save());
+        }
     }
 
     private void gameOver() {

@@ -10,5 +10,5 @@ logging:
     name: ${user.home}/dinosaur/logs/dinosaur.log
   logback:
     rollingpolicy:
-      max-history: 1024
-      max-file-size: 64MB
+      max-history: 128
+      max-file-size: 128MB

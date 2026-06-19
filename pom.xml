@@ -1,31 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.1.0 https://maven.apache.org/xsd/maven-4.1.0.xsd">
+    <modelVersion>4.1.0</modelVersion> <!-- TODO ver se falta mais coisa para migrar para o Maven 4 -->
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.7</version>
+        <version>4.1.0</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
     <groupId>br.com.edward</groupId>
     <artifactId>dinosaur</artifactId>
-    <version>2.1.0</version>
+    <version>${revision}</version>
 
     <name>dinosaur</name>
     <description>Dinosaur Edward Game</description>
 
     <properties>
+        <revision>3.0.0</revision>
         <java.version>25</java.version>
 
         <!-- Tests -->
-        <maven-surefire-plugin.version>3.5.4</maven-surefire-plugin.version>
-        <jacoco.maven.plugin.version>0.8.13</jacoco.maven.plugin.version>
+        <maven-surefire-plugin.version>3.5.6</maven-surefire-plugin.version>
+        <jacoco.maven.plugin.version>0.8.15</jacoco.maven.plugin.version>
 
         <!-- Package -->
-        <exec-maven-plugin.version>3.6.2</exec-maven-plugin.version>
+        <jpackage-maven-plugin.version>1.6.6</jpackage-maven-plugin.version>
+        <maven-antrun-plugin.version>3.2.0</maven-antrun-plugin.version>
     </properties>
 
     <dependencies>
@@ -48,6 +50,32 @@
     </dependencies>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.panteleyev</groupId>
+                    <artifactId>jpackage-maven-plugin</artifactId>
+                    <version>${jpackage-maven-plugin.version}</version>
+                    <configuration>
+                        <name>${project.description}</name>
+                        <appVersion>${project.version}</appVersion>
+                        <vendor>Edward</vendor>
+                        <input>${project.build.directory}/output</input>
+                        <destination>${project.build.directory}/output</destination>
+                        <mainJar>${project.build.finalName}.jar</mainJar>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>jpackage</id>
+                            <phase>install</phase>
+                            <goals>
+                                <goal>jpackage</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -76,28 +104,15 @@
 
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <annotationProcessorPaths>
-                        <path>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </path>
-                    </annotationProcessorPaths>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>${maven-antrun-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>move-file</id>
-                        <phase>install</phase>
+                        <id>copy-jar-to-output</id>
+                        <phase>package</phase>
                         <configuration>
                             <target>
-                                <move file="${project.build.directory}/${project.build.finalName}.jar"
+                                <copy file="${project.build.directory}/${project.build.finalName}.jar"
                                       tofile="${project.build.directory}/output/${project.build.finalName}.jar"/>
                             </target>
                         </configuration>
@@ -151,37 +166,11 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${exec-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>jpackage</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>jpackage</executable>
-                                    <arguments>
-                                        <argument>--name</argument>
-                                        <argument>${project.description}</argument>
-                                        <argument>--input</argument>
-                                        <argument>${project.build.directory}/output</argument>
-                                        <argument>--main-jar</argument>
-                                        <argument>${project.build.finalName}.jar</argument>
-                                        <argument>--app-version</argument>
-                                        <argument>${project.version}</argument>
-                                        <argument>--vendor</argument>
-                                        <argument>Edward</argument>
-                                        <argument>--icon</argument>
-                                        <argument>${project.basedir}/src/main/resources/icons/icon.png</argument>
-                                        <argument>--dest</argument>
-                                        <argument>${project.build.directory}/output</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <icon>${project.basedir}/src/main/resources/icons/icon.png</icon>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -191,39 +180,13 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${exec-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>jpackage</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>jpackage</executable>
-                                    <arguments>
-                                        <argument>--name</argument>
-                                        <argument>${project.description}</argument>
-                                        <argument>--input</argument>
-                                        <argument>${project.build.directory}/output</argument>
-                                        <argument>--main-jar</argument>
-                                        <argument>${project.build.finalName}.jar</argument>
-                                        <argument>--app-version</argument>
-                                        <argument>${project.version}</argument>
-                                        <argument>--vendor</argument>
-                                        <argument>Edward</argument>
-                                        <argument>--icon</argument>
-                                        <argument>${project.basedir}/src/main/resources/icons/icon.ico</argument>
-                                        <argument>--dest</argument>
-                                        <argument>${project.build.directory}/output</argument>
-                                        <argument>--win-shortcut</argument>
-                                        <argument>--win-menu</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <icon>${project.basedir}/src/main/resources/icons/icon.ico</icon>
+                            <winShortcut>true</winShortcut>
+                            <winMenu>true</winMenu>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -233,37 +196,11 @@
             <build>
                 <plugins>
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${exec-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>jpackage</id>
-                                <phase>install</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>jpackage</executable>
-                                    <arguments>
-                                        <argument>--name</argument>
-                                        <argument>${project.description}</argument>
-                                        <argument>--input</argument>
-                                        <argument>${project.build.directory}/output</argument>
-                                        <argument>--main-jar</argument>
-                                        <argument>${project.build.finalName}.jar</argument>
-                                        <argument>--app-version</argument>
-                                        <argument>${project.version}</argument>
-                                        <argument>--vendor</argument>
-                                        <argument>Edward</argument>
-                                        <argument>--icon</argument>
-                                        <argument>${project.basedir}/src/main/resources/icons/icon.icns</argument>
-                                        <argument>--dest</argument>
-                                        <argument>${project.build.directory}/output</argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
+                        <groupId>org.panteleyev</groupId>
+                        <artifactId>jpackage-maven-plugin</artifactId>
+                        <configuration>
+                            <icon>${project.basedir}/src/main/resources/icons/icon.icns</icon>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

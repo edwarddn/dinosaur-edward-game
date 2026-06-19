@@ -27,6 +27,7 @@ public class ObjectUtil {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Optional<T> readObjectFromFile(final Class<?> clazz) {
         final var homePath = getHomePath();
         final var fileName = homePath + clazz.getSimpleName() + ".ser";
@@ -42,8 +43,8 @@ public class ObjectUtil {
     private static String getHomePath() {
         final var homePath = System.getProperty("user.home") + "/dinosaur/";
         final var directory = new File(homePath);
-        if (!directory.exists()) {
-            directory.mkdirs();
+        if (!directory.exists() && !directory.mkdirs()) {
+            log.warn("Could not create directory {}", homePath);
         }
         return homePath;
     }

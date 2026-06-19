@@ -1,4 +1,4 @@
-package br.com.edward.dinosaur.enuns;
+package br.com.edward.dinosaur.enums;
 
 public enum EnumDinosaurActions {
     STANDING,

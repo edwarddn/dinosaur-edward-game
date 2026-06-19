@@ -1,6 +1,6 @@
 package br.com.edward.dinosaur.ai;
 
-import br.com.edward.dinosaur.enuns.EnumTypeFunction;
+import br.com.edward.dinosaur.enums.EnumTypeFunction;
 import lombok.Getter;
 
 import java.io.Serializable;
@@ -21,10 +21,26 @@ public class Layer implements Serializable {
     }
 
     public Layer(final SplittableRandom random, final Layer layer) {
-        this.typeFunction = layer.getTypeFunction();
+        this.typeFunction = layer.typeFunction;
         this.neurons = new Neuron[layer.neurons.length];
         for (int i = 0; i < layer.neurons.length; i++) {
-            this.neurons[i] = new Neuron(random, layer.getNeurons()[i]);
+            this.neurons[i] = new Neuron(random, layer.neurons[i]);
+        }
+    }
+
+    public Layer(final SplittableRandom random, final Layer father, final Layer mother) {
+        this.typeFunction = father.typeFunction;
+        this.neurons = new Neuron[father.neurons.length];
+        for (int i = 0; i < father.neurons.length; i++) {
+            this.neurons[i] = new Neuron(random, father.neurons[i], mother.neurons[i]);
+        }
+    }
+
+    public Layer(final Layer layer) {
+        this.typeFunction = layer.typeFunction;
+        this.neurons = new Neuron[layer.neurons.length];
+        for (int i = 0; i < layer.neurons.length; i++) {
+            this.neurons[i] = new Neuron(layer.neurons[i]);
         }
     }
 
