@@ -125,8 +125,9 @@ public class GameScreen extends JPanel implements Runnable {
 
         if (this.gameState.getConfig().isShowStatistics()) {
             g2d.drawString("Speed: " + DECIMAL_FORMAT.format(this.gameState.getCurrentSpeed()), 5, 35);
-            g2d.drawString("Generation: " + getGeneration(), 5, 55);
-            g2d.drawString("Population: " + this.screenManager.getDinosaurs().size(), 5, 75);
+            g2d.drawString("Age: " + getAge(), 5, 55);
+            g2d.drawString("Generation: " + getGeneration(), 5, 75);
+            g2d.drawString("Population: " + this.screenManager.getDinosaurs().size(), 5, 95);
         }
     }
 
@@ -172,6 +173,12 @@ public class GameScreen extends JPanel implements Runnable {
                 log.error(e.getMessage(), e);
             }
         }
+    }
+
+    private int getAge() {
+        return this.screenManager.getBetterDinosaur()
+                .map(dinosaur -> dinosaur.getNeuralNetwork().getAge())
+                .orElse(0);
     }
 
     private int getGeneration() {
