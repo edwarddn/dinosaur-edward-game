@@ -261,4 +261,8 @@ public class Dinosaur extends BaseEntity {
     public void declareAsBetter() {
         this.better = true;
     }
+
+    public int getAge() {
+        return Objects.nonNull(this.neuralNetwork) ? this.neuralNetwork.getAge() : -1;
+    }
 }

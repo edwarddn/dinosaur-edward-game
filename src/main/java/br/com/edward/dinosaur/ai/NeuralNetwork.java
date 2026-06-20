@@ -15,6 +15,7 @@ public class NeuralNetwork implements Serializable {
     private static final int HIDDEN = 8;
     private static final int OUTPUTS = 2;
 
+    private final int age;
     private final int generation;
     private final Layer inputLayer;
     private final Layer hiddenLayer;
@@ -26,6 +27,7 @@ public class NeuralNetwork implements Serializable {
 
     private NeuralNetwork(final int inputs, final int hidden, final int outputs) {
         final var random = new SplittableRandom();
+        this.age = 1;
         this.generation = 1;
         this.inputLayer = new Layer(random, hidden, inputs, EnumTypeFunction.RELU);
         this.hiddenLayer = new Layer(random, hidden, hidden, EnumTypeFunction.RELU);
@@ -34,6 +36,7 @@ public class NeuralNetwork implements Serializable {
 
     public NeuralNetwork(final NeuralNetwork parent) {
         final var random = new SplittableRandom();
+        this.age = 1;
         this.generation = parent.generation + 1;
         this.inputLayer = new Layer(random, parent.inputLayer);
         this.hiddenLayer = new Layer(random, parent.hiddenLayer);
@@ -42,21 +45,23 @@ public class NeuralNetwork implements Serializable {
 
     public NeuralNetwork(final NeuralNetwork father, final NeuralNetwork mother) {
         final var random = new SplittableRandom();
+        this.age = 1;
         this.generation = Math.max(father.generation, mother.generation) + 1;
         this.inputLayer = new Layer(random, father.inputLayer, mother.inputLayer);
         this.hiddenLayer = new Layer(random, father.hiddenLayer, mother.hiddenLayer);
         this.outputLayer = new Layer(random, father.outputLayer, mother.outputLayer);
     }
 
-    private NeuralNetwork(final NeuralNetwork parent, final int generation) {
-        this.generation = generation;
+    private NeuralNetwork(final NeuralNetwork parent, final int age) {
+        this.age = age;
+        this.generation = parent.generation;
         this.inputLayer = new Layer(parent.inputLayer);
         this.hiddenLayer = new Layer(parent.hiddenLayer);
         this.outputLayer = new Layer(parent.outputLayer);
     }
 
     public static NeuralNetwork elite(final NeuralNetwork parent) {
-        return new NeuralNetwork(parent, parent.generation + 1);
+        return new NeuralNetwork(parent, parent.age + 1);
     }
 
     public static Optional<NeuralNetwork> get() {

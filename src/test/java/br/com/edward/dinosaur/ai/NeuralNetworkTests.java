@@ -98,16 +98,42 @@ class NeuralNetworkTests {
     }
 
     @Test
-    @DisplayName("elite() keeps the weights intact and only advances the generation")
+    @DisplayName("elite() keeps the weights and generation intact and only advances the age")
     void testElite() {
         final var parent = new NeuralNetwork();
 
         final var elite = NeuralNetwork.elite(parent);
 
-        assertThat(elite.getGeneration()).isEqualTo(parent.getGeneration() + 1);
+        assertThat(elite.getGeneration()).isEqualTo(parent.getGeneration());
+        assertThat(elite.getAge()).isEqualTo(parent.getAge() + 1);
         assertThat(elite.getOutputLayer().getNeurons()[0].getWeights())
                 .containsExactly(parent.getOutputLayer().getNeurons()[0].getWeights());
         assertThat(elite.getOutput(CACTUS_SCENARIO)).containsExactly(parent.getOutput(CACTUS_SCENARIO));
+    }
+
+    @Test
+    @DisplayName("Brand new, mutated and crossover networks all start at age 1")
+    void testInitialAge() {
+        final var parent = new NeuralNetwork();
+        final var mother = new NeuralNetwork();
+
+        assertThat(parent.getAge()).isEqualTo(1);
+        assertThat(new NeuralNetwork(parent).getAge()).isEqualTo(1);
+        assertThat(new NeuralNetwork(parent, mother).getAge()).isEqualTo(1);
+    }
+
+    @Test
+    @DisplayName("A surviving elite accumulates one age per generation while keeping its generation")
+    void testEliteAccumulatesAge() {
+        var veteran = new NeuralNetwork();
+        final var birthGeneration = veteran.getGeneration();
+
+        for (int round = 0; round < 5; round++) {
+            veteran = NeuralNetwork.elite(veteran);
+        }
+
+        assertThat(veteran.getAge()).isEqualTo(6);
+        assertThat(veteran.getGeneration()).isEqualTo(birthGeneration);
     }
 
     @Test

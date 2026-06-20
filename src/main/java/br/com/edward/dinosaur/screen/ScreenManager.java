@@ -5,6 +5,7 @@ import br.com.edward.dinosaur.ai.NeuralNetwork;
 import br.com.edward.dinosaur.entity.*;
 import br.com.edward.dinosaur.enums.EnumGameStatus;
 import br.com.edward.dinosaur.enums.EnumTypeOfEntity;
+import br.com.edward.dinosaur.helper.FitnessUtil;
 import lombok.Getter;
 
 import java.awt.*;
@@ -15,10 +16,6 @@ import java.util.stream.Stream;
 
 @Getter
 public class ScreenManager {
-
-    private static final Comparator<Dinosaur> FITNESS = Comparator
-            .comparingLong(Dinosaur::getScore)
-            .thenComparing(Dinosaur::getMovementCount, Comparator.reverseOrder());
 
     private final SplittableRandom random;
     private final List<BaseEntity> objects;
@@ -158,7 +155,7 @@ public class ScreenManager {
         return Stream.concat(this.dinosaurs.stream(), this.deadDinosaurs.stream())
                 .filter(Objects::nonNull)
                 .filter(dino -> dino.getNeuralNetwork() != null)
-                .sorted(FITNESS.reversed())
+                .sorted(FitnessUtil.COMPARATOR.reversed())
                 .limit(parentCount)
                 .map(Dinosaur::getNeuralNetwork)
                 .toList();
@@ -233,6 +230,6 @@ public class ScreenManager {
     public Optional<Dinosaur> getBetterDinosaur() {
         return Stream.concat(this.dinosaurs.stream(), this.deadDinosaurs.stream())
                 .filter(Objects::nonNull)
-                .max(FITNESS);
+                .max(FitnessUtil.COMPARATOR);
     }
 }

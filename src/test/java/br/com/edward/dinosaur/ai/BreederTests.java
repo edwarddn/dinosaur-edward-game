@@ -39,10 +39,12 @@ class BreederTests {
 
         final var population = Breeder.breed(parents, 100, random);
 
-        final long freshBlood = population.stream().filter(network -> network.getGeneration() == 1).count();
-        final long eliteAndOffspring = population.stream().filter(network -> network.getGeneration() == 2).count();
+        final long elite = population.stream().filter(network -> network.getAge() == 2).count();
+        final long freshBlood = population.stream().filter(network -> network.getGeneration() == 1 && network.getAge() == 1).count();
+        final long offspring = population.stream().filter(network -> network.getGeneration() == 2).count();
+        assertThat(elite).isEqualTo(5);
         assertThat(freshBlood).isEqualTo(10);
-        assertThat(eliteAndOffspring).isEqualTo(90);
+        assertThat(offspring).isEqualTo(85);
     }
 
     @Test
@@ -52,7 +54,7 @@ class BreederTests {
 
         final var population = Breeder.breed(parents, 100, random);
 
-        assertThat(population.getFirst().getGeneration()).isEqualTo(parents.getFirst().getGeneration() + 1);
+        assertThat(population.getFirst().getGeneration()).isEqualTo(parents.getFirst().getGeneration());
         assertThat(population.getFirst().getOutputLayer().getNeurons()[0].getWeights())
                 .containsExactly(parents.getFirst().getOutputLayer().getNeurons()[0].getWeights());
     }
@@ -67,5 +69,16 @@ class BreederTests {
         assertThat(population).hasSize(1);
         assertThat(population.getFirst().getOutputLayer().getNeurons()[0].getWeights())
                 .containsExactly(parents.getFirst().getOutputLayer().getNeurons()[0].getWeights());
+    }
+
+    @Test
+    @DisplayName("The leading elites advance their age so survivors gain seniority")
+    void testElitesGainSeniority() {
+        final var parents = freshParents(10);
+
+        final var population = Breeder.breed(parents, 100, random);
+
+        final int eliteCount = 5;
+        assertThat(population.subList(0, eliteCount)).allMatch(network -> network.getAge() == 2);
     }
 }
