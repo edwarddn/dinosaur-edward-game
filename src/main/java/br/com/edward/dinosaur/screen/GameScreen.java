@@ -34,7 +34,8 @@ public class GameScreen extends JPanel implements Runnable {
     private final transient Thread gameThread;
     private final transient Queue<Runnable> actionQueue;
 
-    private transient BufferedImage bufferedImage;
+    private transient volatile BufferedImage frontBuffer;
+    private transient BufferedImage backBuffer;
     private volatile int currentFps;
     private volatile boolean running;
 
@@ -83,19 +84,35 @@ public class GameScreen extends JPanel implements Runnable {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        final var image = this.frontBuffer;
+        if (Objects.nonNull(image)) {
+            g.drawImage(image, 0, 0, null);
+        }
+    }
 
-        if (Objects.isNull(this.bufferedImage) || this.bufferedImage.getWidth() != getWidth() || this.bufferedImage.getHeight() != getHeight()) {
-            this.bufferedImage = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_RGB);
+    private void renderFrame() {
+        final var configuration = getGraphicsConfiguration();
+        final int width = getWidth();
+        final int height = getHeight();
+        if (Objects.isNull(configuration) || width <= 0 || height <= 0) {
+            return;
         }
 
-        final var g2d = this.bufferedImage.createGraphics();
+        if (Objects.isNull(this.backBuffer) || this.backBuffer.getWidth() != width || this.backBuffer.getHeight() != height) {
+            this.backBuffer = configuration.createCompatibleImage(width, height);
+        }
+
+        final var g2d = this.backBuffer.createGraphics();
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         gameRender(g2d);
         statisticsRender(g2d);
 
         g2d.dispose();
-        g.drawImage(this.bufferedImage, 0, 0, null);
+
+        final var rendered = this.backBuffer;
+        this.backBuffer = this.frontBuffer;
+        this.frontBuffer = rendered;
     }
 
     private void gameRender(final Graphics2D g2d) {
@@ -153,6 +170,7 @@ public class GameScreen extends JPanel implements Runnable {
                     gameUpdate(fixedDeltaMs);
                     accumulator -= fixedDeltaNanos;
                 }
+                renderFrame();
                 repaint();
 
                 frameCount++;
