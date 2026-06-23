@@ -179,6 +179,9 @@ public class Dinosaur extends BaseEntity {
         if (!enemy.equals(this.lastEnemy) && distance < 0.0 && !intersect) {
             this.lastEnemy = enemy;
             this.score++;
+            if (this.score > 0 && this.score % 100 == 0) {
+                this.playSound(super.getAssetManager().getReached());
+            }
         }
 
         if (super.getConfig().isCollision() && intersect) {
