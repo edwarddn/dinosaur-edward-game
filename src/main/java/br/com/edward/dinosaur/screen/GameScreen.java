@@ -264,6 +264,11 @@ public class GameScreen extends JPanel implements Runnable {
     }
 
     private void customKeyPressed(final KeyEvent e) {
+        if (e.isAltDown() && e.getKeyCode() == KeyEvent.VK_ENTER) {
+            this.gameState.getGameWindow().toggleFullscreen();
+            return;
+        }
+
         switch (this.gameState.getGameStatus()) {
             case PLAYING -> {
                 if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_UP) {

@@ -9,8 +9,10 @@ import javax.swing.*;
 public class GameWindow extends JFrame {
 
     private final GameScreen gameScreen;
+    private boolean fullscreen;
 
     public GameWindow(final Config config, final AssetManager assetManager) {
+        this.fullscreen = false;
         this.setLocation(80, 10);
         this.setIconImage(ResourceUtil.getResourceImage("icons/icon.png"));
         this.setResizable(config.isResizable());
@@ -25,5 +27,11 @@ public class GameWindow extends JFrame {
     public void startGame() {
         super.setVisible(true);
         this.gameScreen.startGame();
+    }
+
+    public void toggleFullscreen() {
+        final var device = this.getGraphicsConfiguration().getDevice();
+        this.fullscreen = !this.fullscreen;
+        device.setFullScreenWindow(this.fullscreen ? this : null);
     }
 }
