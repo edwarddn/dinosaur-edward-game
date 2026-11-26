@@ -1,0 +1,51 @@
+# TODO: para o Flathub, trocar o jar local por um build do Maven sem internet (dependências listadas no manifesto)
+id: io.github.edwarddn.DinosaurEdwardGame
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.openjdk25
+command: dinosaur-edward-game
+rename-desktop-file: dinosaur-edward-game.desktop
+rename-icon: dinosaur-edward-game
+
+finish-args:
+  - --socket=x11
+  - --share=ipc
+  - --socket=pulseaudio
+  - --device=dri
+  - --persist=dinosaur
+
+modules:
+  - name: openjdk
+    buildsystem: simple
+    build-commands:
+      - /usr/lib/sdk/openjdk25/install.sh
+
+  - name: dinosaur-edward-game
+    buildsystem: simple
+    build-commands:
+      - install -Dm644 dinosaur.jar /app/lib/dinosaur-edward-game/dinosaur.jar
+      - install -Dm755 dinosaur-edward-game.sh /app/bin/dinosaur-edward-game
+      - install -Dm644 dinosaur-edward-game.desktop /app/share/applications/dinosaur-edward-game.desktop
+      - install -Dm644 dinosaur-edward-game.png /app/share/icons/hicolor/256x256/apps/dinosaur-edward-game.png
+      - install -Dm644 ${FLATPAK_ID}.metainfo.xml /app/share/metainfo/${FLATPAK_ID}.metainfo.xml
+      - install -Dm644 -t /app/share/licenses/${FLATPAK_ID} LICENSE THIRD_PARTY_NOTICES.md
+    sources:
+      - type: file
+        path: ../../target/dinosaur-3.2.0.jar # TODO: a versão está fixa aqui
+        dest-filename: dinosaur.jar
+      - type: script
+        dest-filename: dinosaur-edward-game.sh
+        commands:
+          - exec /app/jre/bin/java -jar /app/lib/dinosaur-edward-game/dinosaur.jar "$@"
+      - type: file
+        path: ../linux/dinosaur-edward-game.desktop
+      - type: file
+        path: ../linux/dinosaur-edward-game.png
+      - type: file
+        path: io.github.edwarddn.DinosaurEdwardGame.metainfo.xml
+      - type: file
+        path: ../../LICENSE
+      - type: file
+        path: ../../THIRD_PARTY_NOTICES.md

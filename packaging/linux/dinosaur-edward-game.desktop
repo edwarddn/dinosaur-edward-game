@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Dinosaur Edward Game
+GenericName=Dinosaur Game
+Comment=Dinosaur game with an AI trained by a genetic algorithm
+Comment[pt_BR]=Jogo do dinossauro com uma IA treinada por algoritmo genético
+Exec=dinosaur-edward-game
+Icon=dinosaur-edward-game
+Terminal=false
+Categories=Game;ArcadeGame;
+Keywords=dinosaur;dino;t-rex;neural;network;ai;

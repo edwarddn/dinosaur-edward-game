@@ -1,5 +1,7 @@
 # Dinosaur Edward Game
 
+**English** | [Português](README.pt-BR.md)
+
 ![Dinosaur Edward Game](game-screenshot.gif)
 
 Dinosaur Edward Game is a game based on the popular Chrome dinosaur game, developed in Java 25. 
@@ -10,11 +12,18 @@ To streamline the development process, the project is assisted by modern tools l
 
 To try out the game, download the version compatible with your operating system:
 
-- [Download for macOS (AArch64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.1.1/dinosaur-edward-game-3.1.1.dmg)
-- [Download for Linux (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.1.1/dinosaur-edward-game-3.1.1.deb)
-- [Download for Windows (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.1.1/dinosaur-edward-game-3.1.1.exe)
+- [Download for macOS (AArch64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.2.0/dinosaur-edward-game-3.2.0.dmg)
+- [Download for Windows (x64)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.2.0/dinosaur-edward-game-3.2.0.exe)
+- Download for Linux (x64):
+  - [Debian based distributions (deb)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.2.0/dinosaur-edward-game-3.2.0.deb)
+  - [Red Hat based distributions (rpm)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.2.0/dinosaur-edward-game-3.2.0.rpm)
+  - [Arch Linux based distributions (pkg.tar.zst)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.2.0/dinosaur-edward-game-3.2.0-x86_64.pkg.tar.zst)
+  - [Any distribution (tar.gz)](https://github.com/edwarddn/dinosaur-edward-game/releases/download/v3.2.0/dinosaur-edward-game-3.2.0-linux-x64.tar.gz)
 
 After downloading, simply run the downloaded file on your operating system to install the game.
+
+On Arch Linux based distributions, install the package with `sudo pacman -U ./dinosaur-edward-game-3.2.0-x86_64.pkg.tar.zst`.
+With the `tar.gz`, extract it and run `dinosaur-edward-game/bin/dinosaur-edward-game`.
 
 Enjoy the game and have fun!
 
@@ -79,13 +88,56 @@ This will create a `dinosaur-edward-game.dmg` file in the `target/output` folder
 
 ### Linux
 
-Run the following command:
+The `linux` profile builds every Linux format from the same app-image (the game with an embedded Java runtime), except Flatpak:
+- the `package` phase builds only the app-image, in the `target/app-image/dinosaur-edward-game` folder, and works on any distribution;
+- the `install` phase also builds the `.deb` and `.rpm` packages, in the `target/output` folder.
+
+#### App-image (any distribution)
+
+```bash
+./mvnw clean package -P linux
+target/app-image/dinosaur-edward-game/bin/dinosaur-edward-game
+```
+
+#### Debian (deb) and Red Hat (rpm)
 
 ```bash
 ./mvnw clean install -P linux
 ```
 
-This will create a `dinosaur-edward-game.deb` file in the `target/output` folder.
+This will create the `dinosaur-edward-game.deb` and `dinosaur-edward-game.rpm` files in the `target/output` folder. It requires fakeroot and rpmbuild; on Debian based distributions, install them with `sudo apt install fakeroot rpm`.
+
+#### Arch Linux (pkg.tar.zst)
+
+The `.pkg.tar.zst` package is built by the Release workflow: it packs the app-image with `packaging/arch/PKGBUILD` inside an Arch Linux container and attaches the package to the release, together with a `.tar.gz` of the app-image.
+
+To build and install it locally (the version in the file name must match `pkgver` in the `PKGBUILD`):
+
+```bash
+./mvnw clean package -P linux
+tar -C target/app-image -czf packaging/arch/dinosaur-edward-game-3.2.0-linux-x64.tar.gz dinosaur-edward-game
+cp packaging/linux/dinosaur-edward-game.desktop packaging/linux/dinosaur-edward-game.png LICENSE THIRD_PARTY_NOTICES.md packaging/arch/
+cd packaging/arch
+makepkg -f
+sudo pacman -U ./dinosaur-edward-game-3.2.0-1-x86_64.pkg.tar.zst
+```
+
+#### Flatpak
+
+Install Flatpak Builder from Flathub:
+
+```bash
+flatpak install flathub org.flatpak.Builder
+```
+
+Build the jar, then build and install the Flatpak for the current user:
+
+```bash
+./mvnw clean package
+cd packaging/flatpak
+flatpak run org.flatpak.Builder --user --install --install-deps-from=flathub --force-clean build-dir io.github.edwarddn.DinosaurEdwardGame.yml
+flatpak run io.github.edwarddn.DinosaurEdwardGame
+```
 
 ### Windows
 
@@ -102,8 +154,9 @@ After following these instructions, you will have the final installable versions
 **Important**: Remember to build the application packages on the target platform to ensure compatibility. The system used for packaging must contain the application, a JDK, and the software needed by the packaging tool for each specific platform.
 
 The following platforms and formats are supported with the required software:
-- Linux: deb
-  - For Ubuntu Linux, the fakeroot package is required.
+- Linux: deb, rpm, app-image (tar.gz), Arch package (pkg.tar.zst) and Flatpak
+  - fakeroot and rpmbuild are required to build the deb and rpm.
+  - For Flatpak, Flatpak Builder is required.
 - macOS: dmg
   - Xcode command line tools are required.
 - Windows: exe
@@ -122,3 +175,11 @@ Lastly, heartfelt thanks go to my dear and beloved wife.
 ## Contribution
 
 Contributions are welcome! If you would like to contribute to the Dinosaur Edward Game, please feel free to submit a pull request.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
+The look of the dinosaur, the obstacles and the sound effects are inspired by the offline dinosaur game
+of Google Chrome (Chromium project, © The Chromium Authors, BSD-3-Clause).
+This project is not affiliated with or endorsed by Google. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

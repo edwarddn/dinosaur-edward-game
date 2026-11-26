@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.edwarddn.DinosaurEdwardGame</id>
+  <name>Dinosaur Edward Game</name>
+  <summary>Dinosaur game with an AI trained by a genetic algorithm</summary>
+  <developer id="io.github.edwarddn">
+    <name>Edward</name>
+  </developer>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <description>
+    <p>
+      A dinosaur runner game built from scratch in Java, with its own physics and rendering.
+      Play alone, play against an artificial intelligence, or watch a neural network learn
+      to play through a genetic algorithm.
+    </p>
+    <ul>
+      <li>Jump and crouch to avoid cacti and birds</li>
+      <li>Play against a trained neural network</li>
+      <li>Train the AI and keep the learned weights</li>
+    </ul>
+  </description>
+
+  <launchable type="desktop-id">io.github.edwarddn.DinosaurEdwardGame.desktop</launchable>
+
+  <url type="homepage">https://github.com/edwarddn/dinosaur-edward-game</url>
+  <url type="bugtracker">https://github.com/edwarddn/dinosaur-edward-game/issues</url>
+
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/edwarddn/dinosaur-edward-game/main/game-screenshot.png</image>
+    </screenshot>
+  </screenshots>
+
+  <categories>
+    <category>Game</category>
+    <category>ArcadeGame</category>
+  </categories>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="3.2.0" date="2026-11-26"/>
+    <release version="3.1.1" date="2026-06-23"/>
+  </releases>
+</component>

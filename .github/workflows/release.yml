@@ -34,10 +34,10 @@ jobs:
           java-version: '25'
           cache: maven
 
-      # jpackage needs fakeroot to assemble the .deb
-      - name: Install fakeroot
+      # jpackage needs fakeroot to assemble the .deb and rpm (rpmbuild) to assemble the .rpm
+      - name: Install fakeroot and rpm
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y fakeroot
+        run: sudo apt-get update && sudo apt-get install -y fakeroot rpm
 
       # jpackage needs the WiX Toolset to produce the .exe
       - name: Install WiX Toolset
@@ -64,15 +64,66 @@ jobs:
             cp "$file" "dist/dinosaur-edward-game-${version}.${{ matrix.ext }}"
           done
 
+      # The linux profile also builds the .rpm and an app-image (game + embedded Java) used by the Arch package
+      - name: Stage Linux rpm and app-image tarball
+        if: runner.os == 'Linux'
+        shell: bash
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          version="${REF_NAME#v}"
+          shopt -s nullglob
+          for file in target/output/*.rpm; do
+            cp "$file" "dist/dinosaur-edward-game-${version}.rpm"
+          done
+          tar -C target/app-image -czf "dist/dinosaur-edward-game-${version}-linux-x64.tar.gz" dinosaur-edward-game
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v6
         with:
           name: dinosaur-${{ matrix.profile }}
-          path: dist/*.${{ matrix.ext }}
+          path: dist/*
+          if-no-files-found: error
+
+  # Arch Linux package built from the app-image tarball; nothing goes to the AUR
+  arch-package:
+    needs: package
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download Linux app-image tarball
+        uses: actions/download-artifact@v7
+        with:
+          name: dinosaur-linux
+          path: packaging/arch
+
+      - name: Build package
+        shell: bash
+        env:
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          version="${REF_NAME#v}"
+          cd packaging/arch
+          cp ../linux/dinosaur-edward-game.desktop ../linux/dinosaur-edward-game.png ../../LICENSE ../../THIRD_PARTY_NOTICES.md .
+          sed -i "s/^pkgver=.*/pkgver=${version}/" PKGBUILD
+          # makepkg refuses to run as root; -d skips installing the runtime deps just to package
+          useradd -m builder
+          chown -R builder: .
+          su builder -c "makepkg -f -d --noconfirm"
+          mkdir -p "$GITHUB_WORKSPACE/dist"
+          cp dinosaur-edward-game-*.pkg.tar.zst "$GITHUB_WORKSPACE/dist/dinosaur-edward-game-${version}-x86_64.pkg.tar.zst"
+
+      - name: Upload Arch package
+        uses: actions/upload-artifact@v6
+        with:
+          name: dinosaur-arch
+          path: dist/*.pkg.tar.zst
           if-no-files-found: error
 
   release:
-    needs: package
+    needs: [package, arch-package]
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     permissions:

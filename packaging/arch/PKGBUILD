@@ -1,0 +1,27 @@
+pkgname=dinosaur-edward-game
+pkgver=3.2.0
+pkgrel=1
+pkgdesc="Dinosaur game with an AI trained by a genetic algorithm"
+arch=('x86_64')
+url="https://github.com/edwarddn/dinosaur-edward-game"
+license=('MIT')
+depends=('alsa-lib' 'fontconfig' 'libx11' 'libxext' 'libxi' 'libxinerama' 'libxrandr' 'libxrender' 'libxtst' 'zlib')
+options=('!strip' '!debug')
+source=("${pkgname}-${pkgver}-linux-x64.tar.gz"
+        "${pkgname}.desktop"
+        "${pkgname}.png"
+        "LICENSE"
+        "THIRD_PARTY_NOTICES.md")
+sha256sums=('SKIP' 'SKIP' 'SKIP' 'SKIP' 'SKIP')
+
+package() {
+  install -d "${pkgdir}/opt"
+  cp -a "${srcdir}/${pkgname}" "${pkgdir}/opt/${pkgname}"
+
+  install -d "${pkgdir}/usr/bin"
+  ln -s "/opt/${pkgname}/bin/${pkgname}" "${pkgdir}/usr/bin/${pkgname}"
+
+  install -Dm644 "${srcdir}/${pkgname}.desktop" "${pkgdir}/usr/share/applications/${pkgname}.desktop"
+  install -Dm644 "${srcdir}/${pkgname}.png" "${pkgdir}/usr/share/icons/hicolor/256x256/apps/${pkgname}.png"
+  install -Dm644 -t "${pkgdir}/usr/share/licenses/${pkgname}" "${srcdir}/LICENSE" "${srcdir}/THIRD_PARTY_NOTICES.md"
+}

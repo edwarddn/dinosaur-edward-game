@@ -17,8 +17,15 @@
     <name>dinosaur</name>
     <description>Dinosaur Edward Game</description>
 
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+
     <properties>
-        <revision>3.1.1</revision>
+        <revision>3.2.0</revision>
         <java.version>25</java.version>
 
         <!-- Tests -->
@@ -60,9 +67,30 @@
                         <name>${project.description}</name>
                         <appVersion>${project.version}</appVersion>
                         <vendor>Edward</vendor>
-                        <input>${project.build.directory}/output</input>
+                        <input>${project.build.directory}/input</input>
                         <destination>${project.build.directory}/output</destination>
                         <mainJar>${project.build.finalName}.jar</mainJar>
+                        <addModules>
+                            <addModule>java.base</addModule>
+                            <addModule>java.compiler</addModule>
+                            <addModule>java.desktop</addModule>
+                            <addModule>java.instrument</addModule>
+                            <addModule>java.management</addModule>
+                            <addModule>java.naming</addModule>
+                            <addModule>java.prefs</addModule>
+                            <addModule>java.scripting</addModule>
+                            <addModule>java.sql</addModule>
+                            <addModule>jdk.jfr</addModule>
+                            <addModule>jdk.unsupported</addModule>
+                        </addModules>
+                        <jLinkOptions>
+                            <jLinkOption>--strip-native-commands</jLinkOption>
+                            <jLinkOption>--strip-debug</jLinkOption>
+                            <jLinkOption>--no-man-pages</jLinkOption>
+                            <jLinkOption>--no-header-files</jLinkOption>
+                            <jLinkOption>--vm=server</jLinkOption>
+                            <jLinkOption>--compress=zip-6</jLinkOption>
+                        </jLinkOptions>
                     </configuration>
                     <executions>
                         <execution>
@@ -108,12 +136,12 @@
                 <version>${maven-antrun-plugin.version}</version>
                 <executions>
                     <execution>
-                        <id>copy-jar-to-output</id>
+                        <id>copy-jar-to-input</id>
                         <phase>package</phase>
                         <configuration>
                             <target>
                                 <copy file="${project.build.directory}/${project.build.finalName}.jar"
-                                      tofile="${project.build.directory}/output/${project.build.finalName}.jar"/>
+                                      tofile="${project.build.directory}/input/${project.build.finalName}.jar"/>
                             </target>
                         </configuration>
                         <goals>
@@ -171,6 +199,36 @@
                         <configuration>
                             <icon>${project.basedir}/src/main/resources/icons/icon.png</icon>
                         </configuration>
+                        <executions>
+                            <execution>
+                                <id>jpackage-app-image</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>jpackage</goal>
+                                </goals>
+                                <configuration>
+                                    <type>APP_IMAGE</type>
+                                    <name>dinosaur-edward-game</name>
+                                    <destination>${project.build.directory}/app-image</destination>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jpackage</id>
+                                <configuration>
+                                    <type>DEB</type>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>jpackage-rpm</id>
+                                <phase>install</phase>
+                                <goals>
+                                    <goal>jpackage</goal>
+                                </goals>
+                                <configuration>
+                                    <type>RPM</type>
+                                </configuration>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
